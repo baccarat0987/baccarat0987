@@ -1,4 +1,174 @@
-<script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SOFTWARE</title>
+<style>
+body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #001f3f, #000000);
+    font-family: Arial, sans-serif;
+    color: #fff;
+}
 
-document.write(unescape('%3C%21DOCTYPE%20html%3E%0A%3Chtml%20lang%3D%22en%22%3E%0A%3Chead%3E%0A%3Cmeta%20charset%3D%22UTF-8%22%3E%0A%3Cmeta%20name%3D%22viewport%22%20content%3D%22width%3Ddevice-width%2C%20initial-scale%3D1.0%22%3E%0A%3Ctitle%3ESOFTWARE%3C/title%3E%0A%3Cstyle%3E%0Abody%20%7B%0A%20%20%20%20margin%3A%200%3B%0A%20%20%20%20height%3A%20100vh%3B%0A%20%20%20%20display%3A%20flex%3B%0A%20%20%20%20justify-content%3A%20center%3B%0A%20%20%20%20align-items%3A%20center%3B%0A%20%20%20%20background%3A%20linear-gradient%28135deg%2C%20%23001f3f%2C%20%23000000%29%3B%0A%20%20%20%20font-family%3A%20Arial%2C%20sans-serif%3B%0A%20%20%20%20color%3A%20%23fff%3B%0A%7D%0A%0A.login-container%20%7B%0A%20%20%20%20background%3A%20rgba%280%2C0%2C0%2C0.85%29%3B%0A%20%20%20%20padding%3A%2040px%3B%0A%20%20%20%20border-radius%3A%2015px%3B%0A%20%20%20%20box-shadow%3A%200%200%2020px%20%2300ffff%2C%200%200%2040px%20%2300ffff%20inset%3B%0A%20%20%20%20text-align%3A%20center%3B%0A%20%20%20%20width%3A%20350px%3B%0A%7D%0A%0Ah1%20%7B%0A%20%20%20%20margin-bottom%3A%2025px%3B%0A%20%20%20%20text-shadow%3A%200%200%2010px%20%2300ffff%3B%0A%7D%0A%0Ainput%2C%20select%2C%20button%20%7B%0A%20%20%20%20width%3A%20100%25%3B%0A%20%20%20%20padding%3A%2012px%3B%0A%20%20%20%20margin%3A%2010px%200%3B%0A%20%20%20%20border-radius%3A%208px%3B%0A%20%20%20%20border%3A%20none%3B%0A%20%20%20%20font-size%3A%2016px%3B%0A%7D%0A%0Ainput%20%7B%0A%20%20%20%20background%3A%20%23111%3B%0A%20%20%20%20color%3A%20%23fff%3B%0A%20%20%20%20text-align%3A%20center%3B%0A%7D%0A%0Abutton%20%7B%0A%20%20%20%20background%3A%20linear-gradient%2845deg%2C%20%23001f3f%2C%20%23000000%29%3B%0A%20%20%20%20color%3A%20%23fff%3B%0A%20%20%20%20font-weight%3A%20bold%3B%0A%20%20%20%20text-shadow%3A%200%200%205px%20%2300ffff%3B%0A%20%20%20%20cursor%3A%20pointer%3B%0A%20%20%20%20box-shadow%3A%200%200%2010px%20%2300ffff%2C%200%200%2020px%20%2300ffff%20inset%3B%0A%20%20%20%20transition%3A%200.3s%3B%0A%7D%0A%0Abutton%3Ahover%20%7B%0A%20%20%20%20transform%3A%20scale%281.05%29%3B%0A%20%20%20%20box-shadow%3A%200%200%2020px%20%2300ffff%2C%200%200%2040px%20%2300ffff%20inset%3B%0A%7D%0A%0A.message%20%7B%0A%20%20%20%20margin-top%3A%2015px%3B%0A%20%20%20%20font-weight%3A%20bold%3B%0A%20%20%20%20color%3A%20lime%3B%0A%7D%0A%0A.contact%20%7B%0A%20%20%20%20margin-top%3A%2020px%3B%0A%20%20%20%20font-size%3A%2014px%3B%0A%7D%0A%0A.contact%20a%20%7B%0A%20%20%20%20color%3A%20%2300ffff%3B%0A%20%20%20%20text-decoration%3A%20none%3B%0A%20%20%20%20font-weight%3A%20bold%3B%0A%7D%0A%0A.contact%20a%3Ahover%20%7B%0A%20%20%20%20text-decoration%3A%20underline%3B%0A%7D%0A%3C/style%3E%0A%3C/head%3E%0A%3Cbody%3E%0A%0A%3Cdiv%20class%3D%22login-container%22%3E%0A%20%20%20%20%3Ch1%3ELOGIN%3C/h1%3E%0A%0A%20%20%20%20%3Cinput%20type%3D%22text%22%20id%3D%22passwordInput%22%20placeholder%3D%22Enter%20your%20password%22%3E%0A%0A%20%20%20%20%3Cselect%20id%3D%22appSelect%22%3E%0A%20%20%20%20%20%20%20%20%3Coption%20value%3D%22%22%20disabled%20selected%3ESelect%20your%20app%3C/option%3E%0A%20%20%20%20%20%20%20%20%3Coption%20value%3D%225Kc84iBFrKx1Paf51KBcuuq6LiGKt6KYZ8q8hxtm8DEz%22%3EViper%20Roulette%3C/option%3E%0A%20%20%20%20%20%20%20%20%3Coption%20value%3D%226sdftyu78sdjfjsdkfjosdjf89%22%3EAI%20Baccarat%20Trend%3C/option%3E%0A%20%20%20%20%20%20%20%20%3Coption%20value%3D%22iausgdhiuashdi2s8f7ji%22%3EBaccarat%20Analysis%3C/option%3E%0A%20%20%20%20%20%20%20%20%3Coption%20value%3D%22ajihsdiashdnasuisd%22%3EBaccarat%20Predictor%3C/option%3E%0A%20%20%20%20%20%20%20%20%3Coption%20value%3D%22podjkmapoda983oisjad%22%3EBaccarat%20PRO%3C/option%3E%0A%20%20%20%20%20%20%20%20%3Coption%20value%3D%22s98f7dahijhdf87siou%22%3EBaccarat%20ZeroTrace%3C/option%3E%0A%20%20%20%20%20%20%20%20%3Coption%20value%3D%22asoda9s8d72398e93%22%3ECard%20Counting%3C/option%3E%0A%20%20%20%20%20%20%20%20%3Coption%20value%3D%22aonhdiay8923hiasjdh98%22%3EGemini%20Ultra%3C/option%3E%0A%20%20%20%20%20%20%20%20%3Coption%20value%3D%22986sdijfh89327husdf%22%3EGoogle%20AI%3C/option%3E%0A%20%20%20%20%20%20%20%20%3Coption%20value%3D%220921374sidfy8734sah%22%3EVisionWave%20Baccarat%3C/option%3E%0A%20%20%20%20%3C/select%3E%0A%0A%20%20%20%20%3Cbutton%20id%3D%22loginBtn%22%3ELogin%3C/button%3E%0A%20%20%20%20%3Cdiv%20class%3D%22message%22%20id%3D%22message%22%3E%3C/div%3E%0A%0A%20%20%20%20%3Cdiv%20class%3D%22contact%22%3E%0A%20%20%20%20%20%20%20%20Contact%3A%20%3Ca%20href%3D%22https%3A//t.me/baccarat0987%22%20target%3D%22_blank%22%3Et.me/baccarat0987%3C/a%3E%0A%20%20%20%20%3C/div%3E%0A%3C/div%3E%0A%0A%3Cscript%20type%3D%22module%22%3E%0Aimport%20%7B%20db%2C%20validateLogin%2C%20collection%2C%20query%2C%20where%2C%20getDocs%20%7D%20from%20%27./firebase.js%27%3B%0A%0Aconst%20passwordInput%20%3D%20document.getElementById%28%27passwordInput%27%29%3B%0Aconst%20appSelect%20%3D%20document.getElementById%28%27appSelect%27%29%3B%0Aconst%20loginBtn%20%3D%20document.getElementById%28%27loginBtn%27%29%3B%0Aconst%20message%20%3D%20document.getElementById%28%27message%27%29%3B%0A%0A//%20Check%20localStorage%20on%20page%20load%0Awindow.addEventListener%28%27DOMContentLoaded%27%2C%20async%20%28%29%20%3D%3E%20%7B%0A%20%20%20%20const%20loggedIn%20%3D%20localStorage.getItem%28%27loggedIn%27%29%3B%0A%20%20%20%20const%20allowedApp%20%3D%20localStorage.getItem%28%27allowedApp%27%29%3B%0A%20%20%20%20const%20expiresAt%20%3D%20Number%28localStorage.getItem%28%27expiresAt%27%29%29%3B%0A%0A%20%20%20%20if%20%28loggedIn%20%26%26%20allowedApp%20%26%26%20%28expiresAt%20%3D%3D%3D%200%20%7C%7C%20expiresAt%20%3E%20Date.now%28%29%29%29%20%7B%0A%20%20%20%20%20%20%20%20//%20Still%20valid%20session%0A%20%20%20%20%20%20%20%20window.location.href%20%3D%20allowedApp%20+%20%22.html%22%3B%0A%20%20%20%20%7D%20else%20%7B%0A%20%20%20%20%20%20%20%20//%20Clear%20expired%20session%0A%20%20%20%20%20%20%20%20localStorage.clear%28%29%3B%0A%20%20%20%20%7D%0A%7D%29%3B%0A%0A//%20Login%20button%0AloginBtn.addEventListener%28%27click%27%2C%20async%20%28%29%20%3D%3E%20%7B%0A%20%20%20%20const%20password%20%3D%20passwordInput.value.trim%28%29%3B%0A%20%20%20%20const%20appCode%20%3D%20appSelect.value%3B%0A%0A%20%20%20%20if%20%28%21password%20%7C%7C%20%21appCode%29%20%7B%0A%20%20%20%20%20%20%20%20message.style.color%20%3D%20%22red%22%3B%0A%20%20%20%20%20%20%20%20message.textContent%20%3D%20%22Please%20fill%20all%20fields%21%22%3B%0A%20%20%20%20%20%20%20%20return%3B%0A%20%20%20%20%7D%0A%0A%20%20%20%20try%20%7B%0A%20%20%20%20%20%20%20%20const%20result%20%3D%20await%20validateLogin%28password%2C%20appCode%29%3B%0A%20%20%20%20%20%20%20%20if%20%28result.success%29%20%7B%0A%20%20%20%20%20%20%20%20%20%20%20%20//%20Store%20session%20locally%0A%20%20%20%20%20%20%20%20%20%20%20%20localStorage.setItem%28%27loggedIn%27%2C%20%27true%27%29%3B%0A%20%20%20%20%20%20%20%20%20%20%20%20localStorage.setItem%28%27allowedApp%27%2C%20appCode%29%3B%0A%0A%20%20%20%20%20%20%20%20%20%20%20%20//%20Get%20expiration%20timestamp%0A%20%20%20%20%20%20%20%20%20%20%20%20const%20q%20%3D%20query%28collection%28db%2C%20%22memberPasswords%22%29%2C%20where%28%22password%22%2C%22%3D%3D%22%2Cpassword%29%2C%20where%28%22appCode%22%2C%22%3D%3D%22%2CappCode%29%29%3B%0A%20%20%20%20%20%20%20%20%20%20%20%20const%20snapshot%20%3D%20await%20getDocs%28q%29%3B%0A%20%20%20%20%20%20%20%20%20%20%20%20const%20docData%20%3D%20snapshot.docs%5B0%5D.data%28%29%3B%0A%20%20%20%20%20%20%20%20%20%20%20%20localStorage.setItem%28%27expiresAt%27%2C%20docData.expiresAt%20%3F%20docData.expiresAt.toDate%28%29.getTime%28%29%20%3A%200%29%3B%0A%0A%20%20%20%20%20%20%20%20%20%20%20%20window.location.href%20%3D%20appCode%20+%20%22.html%22%3B%0A%20%20%20%20%20%20%20%20%7D%20else%20%7B%0A%20%20%20%20%20%20%20%20%20%20%20%20message.style.color%20%3D%20%22red%22%3B%0A%20%20%20%20%20%20%20%20%20%20%20%20message.textContent%20%3D%20result.message%3B%0A%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%7D%20catch%28err%29%20%7B%0A%20%20%20%20%20%20%20%20message.style.color%20%3D%20%22red%22%3B%0A%20%20%20%20%20%20%20%20message.textContent%20%3D%20%22Error%3A%20%22%20+%20err.message%3B%0A%20%20%20%20%7D%0A%7D%29%3B%0A%3C/script%3E%0A%0A%3C/body%3E%0A%3C/html%3E%0A'));
+.login-container {
+    background: rgba(0,0,0,0.85);
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff inset;
+    text-align: center;
+    width: 350px;
+}
+
+h1 {
+    margin-bottom: 25px;
+    text-shadow: 0 0 10px #00ffff;
+}
+
+input, select, button {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: 8px;
+    border: none;
+    font-size: 16px;
+}
+
+input {
+    background: #111;
+    color: #fff;
+    text-align: center;
+}
+
+button {
+    background: linear-gradient(45deg, #001f3f, #000000);
+    color: #fff;
+    font-weight: bold;
+    text-shadow: 0 0 5px #00ffff;
+    cursor: pointer;
+    box-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff inset;
+    transition: 0.3s;
+}
+
+button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff inset;
+}
+
+.message {
+    margin-top: 15px;
+    font-weight: bold;
+    color: lime;
+}
+
+.contact {
+    margin-top: 20px;
+    font-size: 14px;
+}
+
+.contact a {
+    color: #00ffff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.contact a:hover {
+    text-decoration: underline;
+}
+</style>
+</head>
+<body>
+
+<div class="login-container">
+    <h1>LOGIN</h1>
+
+    <input type="text" id="passwordInput" placeholder="Enter your password">
+
+    <select id="appSelect">
+        <option value="" disabled selected>Select your app</option>
+        <option value="5Kc84iBFrKx1Paf51KBcuuq6LiGKt6KYZ8q8hxtm8DEz">Viper Roulette</option>
+        <option value="6sdftyu78sdjfjsdkfjosdjf89">AI Baccarat Trend</option>
+        <option value="iausgdhiuashdi2s8f7ji">Baccarat Analysis</option>
+        <option value="ajihsdiashdnasuisd">Baccarat Predictor</option>
+        <option value="podjkmapoda983oisjad">Baccarat PRO</option>
+        <option value="s98f7dahijhdf87siou">Baccarat ZeroTrace</option>
+        <option value="asoda9s8d72398e93">Card Counting</option>
+        <option value="aonhdiay8923hiasjdh98">Gemini Ultra</option>
+        <option value="986sdijfh89327husdf">Google AI</option>
+        <option value="0921374sidfy8734sah">VisionWave Baccarat</option>
+    </select>
+
+    <button id="loginBtn">Login</button>
+    <div class="message" id="message"></div>
+
+    <div class="contact">
+        Contact: <a href="https://t.me/baccarat0987" target="_blank">t.me/baccarat0987</a>
+    </div>
+</div>
+
+<script type="module">
+import { db, validateLogin, collection, query, where, getDocs } from './firebase.js';
+
+const passwordInput = document.getElementById('passwordInput');
+const appSelect = document.getElementById('appSelect');
+const loginBtn = document.getElementById('loginBtn');
+const message = document.getElementById('message');
+
+// Check localStorage on page load
+window.addEventListener('DOMContentLoaded', async () => {
+    const loggedIn = localStorage.getItem('loggedIn');
+    const allowedApp = localStorage.getItem('allowedApp');
+    const expiresAt = Number(localStorage.getItem('expiresAt'));
+
+    if (loggedIn && allowedApp && (expiresAt === 0 || expiresAt > Date.now())) {
+        // Still valid session
+        window.location.href = allowedApp + ".html";
+    } else {
+        // Clear expired session
+        localStorage.clear();
+    }
+});
+
+// Login button
+loginBtn.addEventListener('click', async () => {
+    const password = passwordInput.value.trim();
+    const appCode = appSelect.value;
+
+    if (!password || !appCode) {
+        message.style.color = "red";
+        message.textContent = "Please fill all fields!";
+        return;
+    }
+
+    try {
+        const result = await validateLogin(password, appCode);
+        if (result.success) {
+            // Store session locally
+            localStorage.setItem('loggedIn', 'true');
+            localStorage.setItem('allowedApp', appCode);
+
+            // Get expiration timestamp
+            const q = query(collection(db, "memberPasswords"), where("password","==",password), where("appCode","==",appCode));
+            const snapshot = await getDocs(q);
+            const docData = snapshot.docs[0].data();
+            localStorage.setItem('expiresAt', docData.expiresAt ? docData.expiresAt.toDate().getTime() : 0);
+
+            window.location.href = appCode + ".html";
+        } else {
+            message.style.color = "red";
+            message.textContent = result.message;
+        }
+    } catch(err) {
+        message.style.color = "red";
+        message.textContent = "Error: " + err.message;
+    }
+});
 </script>
+
+</body>
+</html>
