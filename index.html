@@ -3,109 +3,59 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>My Software Portal Login</title>
+<title>Login</title>
 <style>
-body {
-    background: linear-gradient(135deg, #000022, #001144);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    font-family: Arial, sans-serif;
-    color: white;
-}
-
-.login-box {
-    background: rgba(0,0,0,0.7);
-    padding: 40px;
-    border-radius: 12px;
-    box-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.login-box h1 {
-    margin-bottom: 20px;
-    text-shadow: 0 0 5px #00ffff, 0 0 15px #00ffff;
-}
-
-input {
-    margin: 10px 0;
-    padding: 12px;
-    border-radius: 6px;
-    border: none;
-    width: 250px;
-    text-align: center;
-    font-size: 16px;
-}
-
-button {
-    padding: 12px 20px;
-    margin-top: 10px;
-    border-radius: 6px;
-    border: none;
-    font-weight: bold;
-    cursor: pointer;
-    background: #00ffff;
-    color: #000022;
-    box-shadow: 0 0 10px #00ffff;
-}
-a { color: #00ffff; text-decoration: none; margin-top:10px;}
+body { background: linear-gradient(135deg, #0b0b30, #111); font-family: Arial; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh;}
+input, button { padding: 10px; margin: 5px; }
+button { cursor: pointer; background: navy; color: #fff; border: none; border-radius: 5px; box-shadow: 0 0 10px #0ff;}
+button:hover { box-shadow: 0 0 20px #0ff; }
+#msg { margin-top: 10px; font-weight: bold; }
 </style>
 </head>
 <body>
+<h1>Login</h1>
+<input type="text" id="password" placeholder="Enter password"><br>
+<button id="loginBtn">Login</button>
+<p id="msg"></p>
 
-<div class="login-box">
-    <h1>Login</h1>
-    <input type="text" id="email" placeholder="Email">
-    <input type="password" id="password" placeholder="Password">
-    <button id="loginBtn">Login</button>
-    <a href="register.html">Contact t.me/baccarat0987</a>
-</div>
+<script type="module">
+import { db, collection, getDocs } from './firebase.js';
 
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
-<script src="firebase.js"></script>
+const passwordInput = document.getElementById('password');
+const loginBtn = document.getElementById('loginBtn');
+const msg = document.getElementById('msg');
 
-<script>
-const auth = firebase.auth();
-const db = firebase.firestore();
+loginBtn.addEventListener('click', async () => {
+    const pw = passwordInput.value.trim();
+    if(!pw) { msg.textContent = 'Enter password'; return; }
 
-document.getElementById('loginBtn').addEventListener('click', async ()=>{
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    if(!email || !password){ alert("Fill both fields"); return; }
+    const querySnapshot = await getDocs(collection(db, 'memberPasswords'));
+    const now = new Date().getTime();
+    let found = null;
 
-    try {
-        const userCredential = await auth.signInWithEmailAndPassword(email, password);
-        const user = userCredential.user;
-
-        // Check Firestore password info
-        const docRef = db.collection("memberPasswords").doc(user.uid);
-        const docSnap = await docRef.get();
-        if(!docSnap.exists){ await auth.signOut(); alert("Access denied"); return; }
-
-        const data = docSnap.data();
-        const now = new Date();
-
-        if(data.expiresAt.toDate() < now){
-            alert("Password expired"); await auth.signOut(); return;
+    querySnapshot.forEach(doc => {
+        const data = doc.data();
+        if(data.password === pw) {
+            if(!data.expiresAt || now <= data.expiresAt.toDate().getTime()) {
+                found = data;
+            }
         }
+    });
 
-        // Redirect to assigned app
-        if(data.app === "viper-roulette") window.location.href = "viper-roulette.html";
-        else if(data.app === "app2") window.location.href = "app2.html";
-        else if(data.app === "app3") window.location.href = "app3.html";
-        // … repeat for all 10 apps
-        else alert("App not found");
-
-    } catch(err){
-        alert(err.message);
+    if(found) {
+        msg.textContent = '✅ Login successful!';
+        sessionStorage.setItem('login', JSON.stringify({
+            password: pw,
+            app: found.app,
+            expiresAt: found.expiresAt ? found.expiresAt.toDate().getTime() : 0
+        }));
+        setTimeout(() => {
+            window.location.href = found.app + '.html';
+        }, 1000);
+    } else {
+        msg.textContent = '❌ Invalid or expired password';
     }
 });
 </script>
-
 </body>
 </html>
