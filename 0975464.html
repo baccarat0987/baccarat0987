@@ -5,96 +5,48 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin - Create Password</title>
 <style>
-body {
-  background: linear-gradient(135deg, #001f3f, #000000);
-  color: #fff;
-  font-family: Arial, sans-serif;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-}
-
-.admin-container {
-  background: rgba(0,0,0,0.85);
-  padding: 40px;
-  border-radius: 15px;
-  box-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff inset;
-  text-align: center;
-  width: 350px;
-}
-
-h1 {
-  text-shadow: 0 0 10px #00ffff;
-  margin-bottom: 25px;
-}
-
-input, select, button {
-  width: 100%;
-  padding: 12px;
-  margin: 10px 0;
-  border-radius: 8px;
-  border: none;
-  font-size: 16px;
-}
-
-button {
-  background: linear-gradient(45deg, #001f3f, #000000);
-  color: #fff;
-  font-weight: bold;
-  text-shadow: 0 0 5px #00ffff;
-  cursor: pointer;
-  box-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff inset;
-  transition: 0.3s;
-}
-
-button:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff inset;
-}
-
-.message {
-  margin-top: 15px;
-  font-weight: bold;
-  color: lime;
-}
+body { background: linear-gradient(135deg, #001f3f, #000); color:#fff; font-family: Arial; display:flex; justify-content:center; align-items:center; height:100vh;}
+.admin-container { background: rgba(0,0,0,0.85); padding: 40px; border-radius: 15px; text-align:center; width:350px; box-shadow: 0 0 20px #00ffff; }
+input, select, button { width:100%; padding:12px; margin:10px 0; border-radius:8px; border:none; font-size:16px; }
+button { background: linear-gradient(45deg,#001f3f,#000); color:#fff; font-weight:bold; cursor:pointer; box-shadow:0 0 10px #00ffff; transition:.3s;}
+button:hover { transform: scale(1.05); box-shadow:0 0 20px #00ffff; }
+.message { margin-top:15px; font-weight:bold; color:lime; }
 </style>
 </head>
 <body>
-
 <div class="admin-container">
-  <h1>Admin - Create Password</h1>
+<h1>Admin - Create Password</h1>
 
-  <input type="text" id="passwordInput" placeholder="Enter password only">
-  
-  <select id="appSelect">
-    <option value="" disabled selected>Select app</option>
-    <option value="vaskdhasjiqiwueaskjhdqowiyueaishd">Viper Roulette</option>
-    <option value="app2">App 2</option>
-    <option value="app3">App 3</option>
-    <option value="app4">App 4</option>
-    <option value="app5">App 5</option>
-    <option value="app6">App 6</option>
-    <option value="app7">App 7</option>
-    <option value="app8">App 8</option>
-    <option value="app9">App 9</option>
-    <option value="app10">App 10</option>
-  </select>
+<input type="text" id="passwordInput" placeholder="Enter password only">
 
-  <select id="expirationSelect">
-    <option value="" disabled selected>Select expiration</option>
-    <option value="5">5 minutes</option>
-    <option value="10">10 minutes</option>
-    <option value="15">15 minutes</option>
-    <option value="60">1 hour</option>
-    <option value="10080">7 days</option>
-    <option value="21600">15 days</option>
-    <option value="43200">30 days</option>
-    <option value="0">LIFETIME</option>
-  </select>
+<select id="appSelect">
+  <option value="" disabled selected>Select app</option>
+  <option value="5Kc84iBFrKx1Paf51KBcuuq6LiGKt6KYZ8q8hxtm8DEz.html">Viper Roulette</option>
+  <option value="6sdftyu78sdjfjsdkfjosdjf89.html">AI BACCARAT TREND</option>
+  <option value="iausgdhiuashdi2s8f7ji.html">Bacarat analysis</option>
+  <option value="ajihsdiashdnasuisd.html">Baccarat Predictor</option>
+  <option value="podjkmapoda983oisjad.html">Baccarat PRO</option>
+  <option value="s98f7dahijhdf87siou.html">Baccarat ZeroTrace</option>
+  <option value="asoda9s8d72398e93.html">Card Counting</option>
+  <option value="aonhdiay8923hiasjdh98.html">Gemini Ultra</option>
+  <option value="986sdijfh89327husdf.html">Google AI</option>
+  <option value="0921374sidfy8734sah.html">VisionWave Baccarat</option>
+</select>
 
-  <button id="createBtn">Create Password</button>
-  <div class="message" id="message"></div>
+<select id="expirationSelect">
+  <option value="" disabled selected>Select expiration</option>
+  <option value="5">5 minutes</option>
+  <option value="10">10 minutes</option>
+  <option value="15">15 minutes</option>
+  <option value="60">1 hour</option>
+  <option value="10080">7 days</option>
+  <option value="21600">15 days</option>
+  <option value="43200">30 days</option>
+  <option value="0">LIFETIME</option>
+</select>
+
+<button id="createBtn">Create Password</button>
+<div class="message" id="message"></div>
 </div>
 
 <script type="module">
@@ -107,38 +59,25 @@ const createBtn = document.getElementById('createBtn');
 const message = document.getElementById('message');
 
 createBtn.addEventListener('click', async () => {
-    const password = passwordInput.value.trim();
-    const app = appSelect.value;
-    const expMinutes = Number(expirationSelect.value);
+  const password = passwordInput.value.trim();
+  const app = appSelect.value;
+  const expMinutes = Number(expirationSelect.value);
 
-    if (!password || !app || isNaN(expMinutes)) {
-        message.style.color = "red";
-        message.textContent = "Please fill all fields!";
-        return;
-    }
+  if (!password || !app || isNaN(expMinutes)) {
+    message.style.color="red"; message.textContent="Please fill all fields!"; return;
+  }
 
-    let expiresAt = null;
-    if (expMinutes > 0) {
-        expiresAt = Timestamp.fromDate(new Date(Date.now() + expMinutes * 60 * 1000));
-    }
+  let expiresAt = null;
+  if(expMinutes>0) expiresAt = Timestamp.fromDate(new Date(Date.now() + expMinutes*60*1000));
 
-    try {
-        await addDoc(collection(db, "memberPasswords"), {
-            password,
-            app,
-            expiresAt
-        });
-        message.style.color = "lime";
-        message.textContent = "Successfully registered!";
-        passwordInput.value = "";
-        appSelect.value = "";
-        expirationSelect.value = "";
-    } catch (err) {
-        message.style.color = "red";
-        message.textContent = "Error: " + err.message;
-    }
+  try {
+    await addDoc(collection(db,"memberPasswords"), {password, app, expiresAt});
+    message.style.color="lime"; message.textContent="Successfully registered!";
+    passwordInput.value=""; appSelect.value=""; expirationSelect.value="";
+  } catch(err) {
+    message.style.color="red"; message.textContent="Error: "+err.message;
+  }
 });
 </script>
-
 </body>
 </html>
