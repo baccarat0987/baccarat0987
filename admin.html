@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Admin - Create Password</title>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="firebase.js"></script>
+
+<style>
+body { 
+    background:#111; 
+    color:white; 
+    text-align:center; 
+    font-family:Arial; 
+    margin-top:50px; 
+}
+
+select, input, button { 
+    padding:10px; 
+    margin:10px; 
+    font-size:16px; 
+}
+
+button {
+    background:#00c853;
+    color:white;
+    border:none;
+    cursor:pointer;
+}
+
+button:hover {
+    background:#00e676;
+}
+
+#message {
+    margin-top:20px;
+    font-size:18px;
+    font-weight:bold;
+}
+.success {
+    color:#00ff00;
+}
+.error {
+    color:#ff4444;
+}
+</style>
+</head>
+<body>
+
+<h2>Create Password</h2>
+
+<select id="appSelect">
+<option value="viper-roulette">Viper Roulette</option>
+<option value="ai-card-counting">AI CARD COUNTING</option>
+<option value="baccarat-predictor">BACCARAT PREDICTOR</option>
+<option value="baccarat-pro">Baccart PRO</option>
+<option value="gemini-ultra-vip">Gemini ULTRA VIP</option>
+<option value="google-ai-baccarat">Google AI Baccarat</option>
+<option value="visionwave-baccarat-pro">VisionWave Baccarat PRO</option>
+<option value="baccarat-analysis-ultra">Baccarat Analysis ULTRA</option>
+<option value="baccarat-zerotrace">Baccarat ZEROTRACE</option>
+<option value="ai-baccarat-trend">AI BACCARAT TREND</option>
+</select>
+
+<br>
+
+<input type="text" id="password" placeholder="Enter Password">
+
+<br>
+
+<select id="expiration">
+<option value="5">5 Minutes</option>
+<option value="60">1 Hour</option>
+<option value="10080">7 Days</option>
+<option value="21600">15 Days</option>
+<option value="43200">30 Days</option>
+<option value="0">Lifetime</option>
+</select>
+
+<br>
+
+<button onclick="createPassword()">Create Password</button>
+
+<div id="message"></div>
+
+<script>
+async function createPassword(){
+
+    const app = document.getElementById("appSelect").value;
+    const password = document.getElementById("password").value.trim();
+    const expiration = parseInt(document.getElementById("expiration").value);
+    const messageBox = document.getElementById("message");
+
+    messageBox.innerHTML = "";
+
+    if(!password){
+        messageBox.innerHTML = "⚠ Please enter a password.";
+        messageBox.className = "error";
+        return;
+    }
+
+    let expiresAt = null;
+
+    if(expiration !== 0){
+        expiresAt = new Date(Date.now() + expiration * 60000);
+    }
+
+    try {
+        await db.collection("memberPasswords").add({
+            app: app,
+            password: password,
+            expiresAt: expiresAt
+        });
+
+        messageBox.innerHTML = "✅ Successfully Registered!";
+        messageBox.className = "success";
+
+        document.getElementById("password").value = "";
+
+    } catch(error) {
+        console.error(error);
+        messageBox.innerHTML = "❌ Error registering password.";
+        messageBox.className = "error";
+    }
+}
+</script>
+
+</body>
+</html>
