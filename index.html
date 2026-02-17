@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SOFTWARE</title>
+<title>SOFTWARE LOGIN</title>
+
 <style>
 body {
     margin: 0;
@@ -25,11 +26,6 @@ body {
     width: 350px;
 }
 
-h1 {
-    margin-bottom: 25px;
-    text-shadow: 0 0 10px #00ffff;
-}
-
 input, select, button {
     width: 100%;
     padding: 12px;
@@ -49,36 +45,12 @@ button {
     background: linear-gradient(45deg, #001f3f, #000000);
     color: #fff;
     font-weight: bold;
-    text-shadow: 0 0 5px #00ffff;
     cursor: pointer;
-    box-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff inset;
-    transition: 0.3s;
-}
-
-button:hover {
-    transform: scale(1.05);
-    box-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff inset;
 }
 
 .message {
     margin-top: 15px;
     font-weight: bold;
-    color: lime;
-}
-
-.contact {
-    margin-top: 20px;
-    font-size: 14px;
-}
-
-.contact a {
-    color: #00ffff;
-    text-decoration: none;
-    font-weight: bold;
-}
-
-.contact a:hover {
-    text-decoration: underline;
 }
 </style>
 </head>
@@ -105,37 +77,34 @@ button:hover {
 
     <button id="loginBtn">Login</button>
     <div class="message" id="message"></div>
-
-    <div class="contact">
-        Contact: <a href="https://t.me/baccarat0987" target="_blank">t.me/baccarat0987</a>
-    </div>
 </div>
 
 <script type="module">
-import { db, validateLogin, collection, query, where, getDocs } from './firebase.js';
+import { db, collection, query, where, getDocs } from './firebase.js';
 
 const passwordInput = document.getElementById('passwordInput');
 const appSelect = document.getElementById('appSelect');
 const loginBtn = document.getElementById('loginBtn');
 const message = document.getElementById('message');
 
-// Check localStorage on page load
-window.addEventListener('DOMContentLoaded', async () => {
+
+// CHECK SESSION ON LOAD
+window.addEventListener('DOMContentLoaded', () => {
     const loggedIn = localStorage.getItem('loggedIn');
     const allowedApp = localStorage.getItem('allowedApp');
     const expiresAt = Number(localStorage.getItem('expiresAt'));
 
     if (loggedIn && allowedApp && (expiresAt === 0 || expiresAt > Date.now())) {
-        // Still valid session
         window.location.href = allowedApp + ".html";
     } else {
-        // Clear expired session
         localStorage.clear();
     }
 });
 
-// Login button
+
+// LOGIN BUTTON
 loginBtn.addEventListener('click', async () => {
+
     const password = passwordInput.value.trim();
     const appCode = appSelect.value;
 
@@ -146,27 +115,52 @@ loginBtn.addEventListener('click', async () => {
     }
 
     try {
-        const result = await validateLogin(password, appCode);
-        if (result.success) {
-            // Store session locally
-            localStorage.setItem('loggedIn', 'true');
-            localStorage.setItem('allowedApp', appCode);
 
-            // Get expiration timestamp
-            const q = query(collection(db, "memberPasswords"), where("password","==",password), where("appCode","==",appCode));
-            const snapshot = await getDocs(q);
-            const docData = snapshot.docs[0].data();
-            localStorage.setItem('expiresAt', docData.expiresAt ? docData.expiresAt.toDate().getTime() : 0);
+        const q = query(
+            collection(db, "memberPasswords"),
+            where("password", "==", password),
+            where("appCode", "==", appCode)
+        );
 
-            window.location.href = appCode + ".html";
-        } else {
+        const snapshot = await getDocs(q);
+
+        if (snapshot.empty) {
             message.style.color = "red";
-            message.textContent = result.message;
+            message.textContent = "Invalid password!";
+            return;
         }
-    } catch(err) {
+
+        const data = snapshot.docs[0].data();
+
+        let expiresAt = 0;
+
+        if (data.expiresAt) {
+            expiresAt = data.expiresAt.toDate().getTime();
+            if (expiresAt < Date.now()) {
+                message.style.color = "red";
+                message.textContent = "Password expired!";
+                return;
+            }
+        }
+
+        // SAVE SESSION
+        localStorage.setItem('loggedIn', 'true');
+        localStorage.setItem('allowedApp', appCode);
+        localStorage.setItem('expiresAt', expiresAt);
+
+        message.style.color = "lime";
+        message.textContent = "Login successful!";
+
+        setTimeout(() => {
+            window.location.href = appCode + ".html";
+        }, 800);
+
+    } catch (err) {
+        console.error(err);
         message.style.color = "red";
         message.textContent = "Error: " + err.message;
     }
+
 });
 </script>
 
