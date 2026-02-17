@@ -3,59 +3,141 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Login</title>
+<title>My Software Portal - Login</title>
 <style>
-body { background: linear-gradient(135deg, #0b0b30, #111); font-family: Arial; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh;}
-input, button { padding: 10px; margin: 5px; }
-button { cursor: pointer; background: navy; color: #fff; border: none; border-radius: 5px; box-shadow: 0 0 10px #0ff;}
-button:hover { box-shadow: 0 0 20px #0ff; }
-#msg { margin-top: 10px; font-weight: bold; }
+  /* Background */
+  body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #001f3f, #000000);
+    color: #fff;
+  }
+
+  /* Login container */
+  .login-container {
+    background: rgba(0,0,0,0.8);
+    padding: 40px 50px;
+    border-radius: 15px;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.3), 0 0 40px rgba(0, 255, 255, 0.2);
+    text-align: center;
+    width: 320px;
+  }
+
+  h1 {
+    margin-bottom: 30px;
+    font-size: 2rem;
+    text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff;
+  }
+
+  input {
+    width: 100%;
+    padding: 12px 15px;
+    margin: 10px 0 20px 0;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+  }
+
+  input:focus {
+    outline: none;
+    box-shadow: 0 0 10px #00ffff;
+    background: rgba(255,255,255,0.1);
+  }
+
+  button {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #fff;
+    background: linear-gradient(45deg, #001f3f, #000000);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    text-shadow: 0 0 5px #00ffff;
+    box-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff inset;
+    transition: 0.3s;
+  }
+
+  button:hover {
+    box-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff inset;
+    transform: scale(1.05);
+  }
+
+  .contact {
+    margin-top: 20px;
+    font-size: 14px;
+    color: #00ffff;
+  }
+
+  .contact a {
+    color: #00ffff;
+    text-decoration: none;
+    font-weight: bold;
+  }
+
+  .contact a:hover {
+    text-decoration: underline;
+  }
+
+  .message {
+    margin-top: 10px;
+    font-size: 14px;
+    color: lime;
+  }
 </style>
 </head>
 <body>
-<h1>Login</h1>
-<input type="text" id="password" placeholder="Enter password"><br>
-<button id="loginBtn">Login</button>
-<p id="msg"></p>
+
+<div class="login-container">
+  <h1>Login Portal</h1>
+  <input type="password" id="passwordInput" placeholder="Enter your password">
+  <button id="loginBtn">Login</button>
+  <div class="message" id="message"></div>
+  <div class="contact">
+    Contact: <a href="https://t.me/baccarat0987" target="_blank">t.me/baccarat0987</a>
+  </div>
+</div>
 
 <script type="module">
-import { db, collection, getDocs } from './firebase.js';
+  import { db, collection, getDocs, Timestamp } from './firebase.js';
 
-const passwordInput = document.getElementById('password');
-const loginBtn = document.getElementById('loginBtn');
-const msg = document.getElementById('msg');
+  const passwordInput = document.getElementById('passwordInput');
+  const loginBtn = document.getElementById('loginBtn');
+  const message = document.getElementById('message');
 
-loginBtn.addEventListener('click', async () => {
-    const pw = passwordInput.value.trim();
-    if(!pw) { msg.textContent = 'Enter password'; return; }
+  loginBtn.addEventListener('click', async () => {
+    const input = passwordInput.value.trim();
+    if (!input) return;
 
-    const querySnapshot = await getDocs(collection(db, 'memberPasswords'));
-    const now = new Date().getTime();
-    let found = null;
+    // 🔹 Fetch all registered passwords from Firestore
+    const col = collection(db, "memberPasswords");
+    const snapshot = await getDocs(col);
+    let found = false;
 
-    querySnapshot.forEach(doc => {
-        const data = doc.data();
-        if(data.password === pw) {
-            if(!data.expiresAt || now <= data.expiresAt.toDate().getTime()) {
-                found = data;
-            }
-        }
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      const expiresAt = data.expiresAt ? data.expiresAt.toDate() : null;
+      const now = new Date();
+
+      if (data.password === input && (!expiresAt || now <= expiresAt)) {
+        found = true;
+        // Redirect to the app page
+        window.location.href = data.app + ".html";
+      }
     });
 
-    if(found) {
-        msg.textContent = '✅ Login successful!';
-        sessionStorage.setItem('login', JSON.stringify({
-            password: pw,
-            app: found.app,
-            expiresAt: found.expiresAt ? found.expiresAt.toDate().getTime() : 0
-        }));
-        setTimeout(() => {
-            window.location.href = found.app + '.html';
-        }, 1000);
-    } else {
-        msg.textContent = '❌ Invalid or expired password';
+    if (!found) {
+      message.textContent = "Invalid or expired password!";
+      message.style.color = "red";
+      passwordInput.value = "";
     }
-});
+  });
 </script>
+
 </body>
 </html>
