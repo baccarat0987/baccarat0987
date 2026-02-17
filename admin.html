@@ -3,67 +3,83 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin - Create Member Password</title>
+<title>Admin - Register Password</title>
 <style>
-body { background:#001144; color:white; font-family:Arial; display:flex; justify-content:center; align-items:center; height:100vh; }
-.admin-box { background:rgba(0,0,0,0.8); padding:30px; border-radius:12px; box-shadow:0 0 20px #00ffff; display:flex; flex-direction:column; align-items:center; }
-input, select { margin:10px 0; padding:12px; width:250px; border-radius:6px; border:none; text-align:center; }
-button { padding:12px 20px; margin-top:10px; border-radius:6px; border:none; font-weight:bold; cursor:pointer; background:#00ffff; color:#000022; }
+body { font-family: Arial; padding: 50px; background: #111; color: #fff; }
+input, select, button { padding: 10px; margin: 5px 0; }
+.success { color: lime; font-weight: bold; }
 </style>
 </head>
 <body>
+<h1>Create Registration Password</h1>
 
-<div class="admin-box">
-<h1>Create Member Password</h1>
-<input type="email" id="email" placeholder="Member Email">
-<input type="password" id="password" placeholder="Member Password">
+<label>Password:</label><br>
+<input type="text" id="password"><br>
+
+<label>App:</label><br>
 <select id="appSelect">
-    <option value="viper-roulette">VIPER ROULETTE</option>
-    <option value="app2">APP2</option>
-    <option value="app3">APP3</option>
-    <option value="app4">APP4</option>
-    <option value="app5">APP5</option>
-    <option value="app6">APP6</option>
-    <option value="app7">APP7</option>
-    <option value="app8">APP8</option>
-    <option value="app9">APP9</option>
-    <option value="app10">APP10</option>
-</select>
-<input type="date" id="expireDate">
-<button id="createBtn">Create Member</button>
-</div>
+    <option value="viper-roulette">Viper Roulette</option>
+    <option value="ai-card-counting">AI CARD COUNTING</option>
+    <option value="baccarat-predictor">BACCARAT PREDICTOR</option>
+    <option value="baccart-pro">Baccart PRO</option>
+    <option value="gemini-ultra-vip">Gemini ULTRA VIP</option>
+    <option value="google-ai-baccarat">Google AI Baccarat</option>
+    <option value="visionwave-baccarat-pro">VisionWave Baccarat PRO</option>
+    <option value="baccarat-analysis-ultra">Baccarat Analysis ULTRA</option>
+    <option value="baccarat-zerotrace">Baccarat ZEROTRACE</option>
+    <option value="ai-baccarat-trend">AI BACCARAT TREND</option>
+</select><br>
 
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
-<script src="firebase.js"></script>
+<label>Expires in:</label><br>
+<select id="expireSelect">
+    <option value="5">5 minutes</option>
+    <option value="10">10 minutes</option>
+    <option value="15">15 minutes</option>
+    <option value="60">1 hour</option>
+    <option value="10080">7 days</option>
+    <option value="21600">15 days</option>
+    <option value="43200">30 days</option>
+    <option value="0">LIFETIME</option>
+</select><br>
 
-<script>
-const auth = firebase.auth();
-const db = firebase.firestore();
+<button id="createBtn">Create Password</button>
+<p id="msg"></p>
 
-document.getElementById('createBtn').addEventListener('click', async ()=>{
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    const app = document.getElementById('appSelect').value;
-    const expire = document.getElementById('expireDate').value;
-    if(!email||!password||!app||!expire){ alert("Fill all fields"); return; }
+<script type="module">
+import { db, collection, addDoc, Timestamp } from './firebase.js';
+
+const passwordInput = document.getElementById('password');
+const appSelect = document.getElementById('appSelect');
+const expireSelect = document.getElementById('expireSelect');
+const createBtn = document.getElementById('createBtn');
+const msg = document.getElementById('msg');
+
+createBtn.addEventListener('click', async () => {
+    const pw = passwordInput.value.trim();
+    if(!pw) { msg.textContent = 'Password cannot be empty'; return; }
+
+    const app = appSelect.value;
+    const expireMinutes = Number(expireSelect.value);
+    let expiresAt = null;
+    if(expireMinutes > 0) {
+        expiresAt = Timestamp.fromDate(new Date(Date.now() + expireMinutes*60*1000));
+    }
 
     try {
-        // Create Firebase Auth user
-        const userCredential = await auth.createUserWithEmailAndPassword(email,password);
-        const uid = userCredential.user.uid;
-
-        // Add Firestore info
-        await db.collection("memberPasswords").doc(uid).set({
+        await addDoc(collection(db, 'memberPasswords'), {
+            password: pw,
             app: app,
-            password: password,
-            expiresAt: new Date(expire)
+            expiresAt: expiresAt
         });
-        alert("Member created successfully!");
-    } catch(err){ alert(err.message); }
+        msg.textContent = '✅ Successfully registered';
+        msg.className = 'success';
+        passwordInput.value = '';
+    } catch(e) {
+        console.error(e);
+        msg.textContent = '❌ Error registering password';
+        msg.className = '';
+    }
 });
 </script>
-
 </body>
 </html>
