@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AI Baccarat Trend Predictor - VIP</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    background-color: #2c2c2c;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #f0f0f0;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 10px;
+    overflow: hidden;
+}
+.container {
+    width: 550px;
+    background-color: #3a3a3a;
+    border-radius: 30px;
+    padding: 20px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+    min-height: 50vh;
+}
+.logo { text-align: center; margin-bottom: 15px; display:flex; justify-content:center; align-items:center; gap:8px; }
+.logo .logo-text { font-size: 22px; font-weight: bold; color: #ffffff; }
+.logo .logo-icon { font-size: 22px; color: #32cd32; }
+
+.buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+.button {
+    flex: 1 1 calc(25% - 10px);
+    padding: 15px 0;
+    font-size: 16px;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    font-weight: bold;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 0 15px rgba(0,0,0,0.1);
+}
+.button-P { background: linear-gradient(135deg, #00c6ff, #0072ff); }
+.button-B { background: linear-gradient(135deg, #ff416c, #ff4b2b); }
+.button-undo { background: linear-gradient(135deg, #757f9a, #d7dde8); color: #000; }
+.button-reset { background: linear-gradient(135deg, #f7971e, #ffd200); color: #000; }
+
+.input-display {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 15px;
+    max-height: 90px;
+    overflow-y: auto;
+    padding-right: 5px;
+    background-color: #555;
+    border: 1px solid #777;
+    border-radius: 6px;
+    padding: 8px;
+}
+.input-char {
+    padding: 6px 5px;
+    border-radius: 4px;
+    font-size: 20px;
+    width: 26px;
+    text-align: center;
+    color: #fff;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+.input-P { background-color: #00c6ff; }
+.input-B { background-color: #ff416c; }
+
+.progress-bar-container {
+    background-color: #555;
+    border-radius: 5px;
+    overflow: hidden;
+    height: 16px;
+    margin-bottom: 15px;
+    border: 1px solid #777;
+}
+.progress-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #00c6ff, #32cd32);
+    text-align: center;
+    color: #fff;
+    line-height: 16px;
+    font-weight: bold;
+    transition: width 0.5s;
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
+}
+
+.section-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 15px 0 8px;
+    text-align: center;
+    color: #32cd32;
+}
+
+.future-results {
+    background-color: #444;
+    padding: 12px;
+    border-radius: 8px;
+    margin-top: 8px;
+    font-size: 14px;
+    line-height: 1.4;
+}
+.stacked-bar-bg {
+    width: 100%;
+    background-color: #555;
+    border-radius: 8px;
+    overflow: hidden;
+    height: 24px;
+    display: flex;
+    margin-bottom: 8px;
+}
+
+@keyframes gradientMove {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+.stacked-bar {
+    height: 100%;
+    text-align: center;
+    line-height: 24px;
+    font-weight: bold;
+    color: #fff;
+    transition: width 0.5s;
+    background-size: 200% 200%;
+    animation: gradientMove 3s ease infinite;
+}
+.player-bar { background: linear-gradient(270deg, #00c6ff, #0072ff, #00c6ff); }
+.banker-bar { background: linear-gradient(270deg, #ff416c, #ff4b2b, #ff416c); }
+
+.trend-labels {
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+    color: #fff;
+    font-size: 15px;
+}
+
+.history-box {
+    margin-top: 15px;
+    padding: 8px;
+    background-color: #444;
+    border-radius: 8px;
+    font-size: 25px;
+    font-weight: bold;
+    letter-spacing: 4px;
+    text-align: center;
+}
+.history-win { color: #32cd32; }
+.history-lose { color: #ff4b4b; }
+</style>
+</head>
+<body>
+
+<!-- Hidden container until session check passes -->
+<div class="container" id="appContainer" style="display:none;">
+
+<div class="logo">
+    <i class="fa-solid fa-chart-line logo-icon"></i>
+    <span class="logo-text">AI Baccarat Trend Predictor</span>
+</div>
+
+<nav class="buttons">
+    <button class="button button-P" onclick="addInput('P')"><i class="fa-solid fa-user"></i>&nbsp; Player</button>
+    <button class="button button-B" onclick="addInput('B')"><i class="fa-solid fa-landmark"></i>&nbsp; Banker</button>
+    <button class="button button-undo" onclick="undo()"><i class="fa-solid fa-rotate-left"></i>&nbsp; UNDO</button>
+    <button class="button button-reset" onclick="resetAll()"><i class="fa-solid fa-rotate-right"></i>&nbsp; RESET</button>
+</nav>
+
+<div id="inputDisplay" class="input-display"></div>
+
+<div id="progressContainer" class="progress-bar-container">
+    <div id="progressBar" class="progress-bar">0%</div>
+</div>
+
+<div id="futureContainer" style="display:none;">
+    <div class="section-title">Future Trends of Gaming Tables</div>
+    <div id="futureOutput" class="future-results">
+        <div class="stacked-bar-bg">
+            <div id="playerTrendBar" class="stacked-bar player-bar" style="width:0%;">0%</div>
+            <div id="bankerTrendBar" class="stacked-bar banker-bar" style="width:0%;">0%</div>
+        </div>
+        <div class="trend-labels">
+            <span>PLAYER</span>
+            <span>BANKER</span>
+        </div>
+    </div>
+</div>
+
+<div id="historyBox" class="history-box"></div>
+</div>
+
+<script>
+// =================== SESSION CHECK ===================
+const loggedIn = localStorage.getItem('loggedIn');
+const allowedApp = localStorage.getItem('allowedApp');
+const expiresAt = Number(localStorage.getItem('expiresAt'));
+const appCode = "VIP-BACCARAT-123"; // unique app code
+
+if(loggedIn !== 'true' || allowedApp !== appCode || (expiresAt && expiresAt < Date.now())) {
+    alert("Please login first!");
+    localStorage.removeItem('loggedIn');
+    localStorage.removeItem('allowedApp');
+    localStorage.removeItem('expiresAt');
+    window.location.href = "index.html";
+} else {
+    // Show app only after session check
+    document.getElementById('appContainer').style.display = 'flex';
+}
+
+// =================== Baccarat App Logic ===================
+let inputs = [];
+let trendsHistory = [];
+let historyWL = [];
+let lastPrediction = null;
+let appHistory = [];
+
+function saveSnapshot() {
+    appHistory.push({
+        inputs: [...inputs],
+        trendsHistory: trendsHistory.map(t => ({...t})),
+        historyWL: [...historyWL],
+        lastPrediction: lastPrediction
+    });
+    if(appHistory.length > 100) appHistory.shift();
+}
+
+function renderDisplay() {
+    const display = document.getElementById("inputDisplay");
+    display.innerHTML = "";
+    inputs.slice(-10).forEach(c => {
+        const div = document.createElement("div");
+        div.classList.add("input-char", c === "P" ? "input-P" : "input-B");
+        div.textContent = c;
+        display.appendChild(div);
+    });
+    updateProgress();
+    updateFutureTrends();
+    updateHistory();
+}
+
+function addInput(v) {
+    if(lastPrediction !== null) {
+        historyWL.push(lastPrediction === v ? "W" : "L");
+        if(historyWL.length > 10) historyWL.shift();
+        lastPrediction = null;
+    }
+
+    inputs.push(v);
+
+    if(inputs.length >= 1){
+        let playerPercent = Math.floor(Math.random() * 61) + 20;
+        let bankerPercent = 100 - playerPercent;
+        trendsHistory.push({player: playerPercent, banker: bankerPercent});
+        if(trendsHistory.length > 10) trendsHistory.shift();
+        lastPrediction = (playerPercent !== bankerPercent) ? (playerPercent > bankerPercent ? "P" : "B") : null;
+    }
+
+    saveSnapshot();
+    renderDisplay();
+}
+
+function undo() {
+    if(appHistory.length === 0) return;
+    appHistory.pop();
+    if(appHistory.length === 0) {
+        inputs = [];
+        trendsHistory = [];
+        historyWL = [];
+        lastPrediction = null;
+    } else {
+        const snapshot = appHistory[appHistory.length - 1];
+        inputs = [...snapshot.inputs];
+        trendsHistory = snapshot.trendsHistory.map(t => ({...t}));
+        historyWL = [...snapshot.historyWL];
+        lastPrediction = snapshot.lastPrediction;
+    }
+    renderDisplay();
+}
+
+function resetAll() {
+    inputs = [];
+    trendsHistory = [];
+    historyWL = [];
+    lastPrediction = null;
+    appHistory = [];
+    renderDisplay();
+}
+
+function updateProgress() {
+    const pb = document.getElementById("progressBar");
+    const container = document.getElementById("progressContainer");
+    container.style.display = inputs.length >= 1 ? "none" : "block";
+    const percent = Math.min((inputs.length / 1) * 100, 100);
+    pb.style.width = percent + "%";
+    pb.innerText = Math.round(percent) + "%";
+}
+
+function updateFutureTrends() {
+    const futureContainer = document.getElementById("futureContainer");
+    const playerBar = document.getElementById("playerTrendBar");
+    const bankerBar = document.getElementById("bankerTrendBar");
+    if(inputs.length < 1){
+        futureContainer.style.display = "none";
+        return;
+    }
+    futureContainer.style.display = "block";
+    const trend = trendsHistory[trendsHistory.length-1];
+    playerBar.style.width = trend.player + "%";
+    playerBar.innerText = trend.player + "%";
+    bankerBar.style.width = trend.banker + "%";
+    bankerBar.innerText = trend.banker + "%";
+}
+
+function updateHistory() {
+    const box = document.getElementById("historyBox");
+    box.innerHTML = "";
+    historyWL.forEach(result => {
+        const span = document.createElement("span");
+        span.textContent = result + " ";
+        span.classList.add(result === "W" ? "history-win" : "history-lose");
+        box.appendChild(span);
+    });
+}
+</script>
+
+</body>
+</html>
