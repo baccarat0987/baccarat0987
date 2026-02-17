@@ -5,68 +5,43 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin - Create Password</title>
 <style>
-  body {
-    background: linear-gradient(135deg, #001f3f, #000000);
-    color: #fff;
-    font-family: Arial, sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-  }
-
-  .admin-container {
-    background: rgba(0,0,0,0.85);
-    padding: 40px;
-    border-radius: 15px;
-    box-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff inset;
-    text-align: center;
-    width: 350px;
-  }
-
-  h1 {
-    text-shadow: 0 0 10px #00ffff;
-    margin-bottom: 25px;
-  }
-
-  input, select, button {
-    width: 100%;
-    padding: 12px;
-    margin: 10px 0;
-    border-radius: 8px;
-    border: none;
-    font-size: 16px;
-  }
-
-  button {
-    background: linear-gradient(45deg, #001f3f, #000000);
-    color: #fff;
-    font-weight: bold;
-    text-shadow: 0 0 5px #00ffff;
-    cursor: pointer;
-    box-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff inset;
-    transition: 0.3s;
-  }
-
-  button:hover {
-    transform: scale(1.05);
-    box-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff inset;
-  }
-
-  .message {
-    margin-top: 15px;
-    font-weight: bold;
-    color: lime;
-  }
+body {
+  background: linear-gradient(135deg, #001f3f, #000000);
+  color: #fff;
+  font-family: Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+.admin-container {
+  background: rgba(0,0,0,0.85);
+  padding: 40px;
+  border-radius: 15px;
+  box-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff inset;
+  text-align: center;
+  width: 350px;
+}
+h1 { text-shadow: 0 0 10px #00ffff; margin-bottom: 25px; }
+input, select, button {
+  width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; font-size: 16px;
+}
+button {
+  background: linear-gradient(45deg, #001f3f, #000000);
+  color: #fff; font-weight: bold; text-shadow: 0 0 5px #00ffff;
+  cursor: pointer;
+  box-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff inset;
+  transition: 0.3s;
+}
+button:hover { transform: scale(1.05); box-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff inset; }
+.message { margin-top: 15px; font-weight: bold; color: lime; }
 </style>
 </head>
 <body>
 
 <div class="admin-container">
   <h1>Admin - Create Password</h1>
-
   <input type="text" id="passwordInput" placeholder="Enter password only">
-  
   <select id="appSelect">
     <option value="" disabled selected>Select app</option>
     <option value="viper-roulette">VIPER Roulette</option>
@@ -80,7 +55,6 @@
     <option value="app9">App 9</option>
     <option value="app10">App 10</option>
   </select>
-
   <select id="expirationSelect">
     <option value="" disabled selected>Select expiration</option>
     <option value="5">5 minutes</option>
@@ -92,52 +66,47 @@
     <option value="43200">30 days</option>
     <option value="0">LIFETIME</option>
   </select>
-
   <button id="createBtn">Create Password</button>
   <div class="message" id="message"></div>
 </div>
 
 <script type="module">
-  import { db, collection, addDoc, Timestamp } from './firebase.js';
+import { db, collection, addDoc, Timestamp } from './firebase.js';
 
-  const passwordInput = document.getElementById('passwordInput');
-  const appSelect = document.getElementById('appSelect');
-  const expirationSelect = document.getElementById('expirationSelect');
-  const createBtn = document.getElementById('createBtn');
-  const message = document.getElementById('message');
+const passwordInput = document.getElementById('passwordInput');
+const appSelect = document.getElementById('appSelect');
+const expirationSelect = document.getElementById('expirationSelect');
+const createBtn = document.getElementById('createBtn');
+const message = document.getElementById('message');
 
-  createBtn.addEventListener('click', async () => {
-    const password = passwordInput.value.trim();
-    const app = appSelect.value;
-    const expMinutes = Number(expirationSelect.value);
+createBtn.addEventListener('click', async () => {
+  const password = passwordInput.value.trim();
+  const app = appSelect.value;
+  const expMinutes = Number(expirationSelect.value);
 
-    if (!password || !app || isNaN(expMinutes)) {
-      message.style.color = "red";
-      message.textContent = "Please fill all fields!";
-      return;
-    }
+  if (!password || !app || isNaN(expMinutes)) {
+    message.style.color = "red";
+    message.textContent = "Please fill all fields!";
+    return;
+  }
 
-    let expiresAt = null;
-    if (expMinutes > 0) {
-      expiresAt = Timestamp.fromDate(new Date(Date.now() + expMinutes * 60 * 1000));
-    }
+  let expiresAt = null;
+  if (expMinutes > 0) {
+    expiresAt = Timestamp.fromDate(new Date(Date.now() + expMinutes * 60 * 1000));
+  }
 
-    try {
-      await addDoc(collection(db, "memberPasswords"), {
-        password,
-        app,
-        expiresAt
-      });
-      message.style.color = "lime";
-      message.textContent = "Successfully registered!";
-      passwordInput.value = "";
-      appSelect.value = "";
-      expirationSelect.value = "";
-    } catch (err) {
-      message.style.color = "red";
-      message.textContent = "Error: " + err.message;
-    }
-  });
+  try {
+    await addDoc(collection(db, "memberPasswords"), { password, app, expiresAt });
+    message.style.color = "lime";
+    message.textContent = "Successfully registered!";
+    passwordInput.value = "";
+    appSelect.value = "";
+    expirationSelect.value = "";
+  } catch (err) {
+    message.style.color = "red";
+    message.textContent = "Error: " + err.message;
+  }
+});
 </script>
 
 </body>
