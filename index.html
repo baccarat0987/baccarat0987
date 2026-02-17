@@ -1,68 +1,120 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Software Portal Login</title>
-
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="firebase.js"></script>
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Premium Login - My Software Portal</title>
 <style>
-body { background:#111; color:white; text-align:center; font-family:Arial; margin-top:100px; }
-input, button { padding:10px; font-size:16px; }
+body {
+    background: linear-gradient(135deg, #001f3f, #000, #001a2f);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-family: Arial, sans-serif;
+    color: white;
+}
+.login-box {
+    background: rgba(0,0,0,0.85);
+    padding: 40px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 0 20px #0fa23f, 0 0 40px #0fa23f, 0 0 60px #0fa23f;
+}
+.login-box h1 {
+    font-size: 2.5rem;
+    color: #0fa23f;
+    text-shadow: 0 0 10px #0fa23f, 0 0 20px #0fa23f;
+    margin-bottom: 30px;
+}
+.login-box input {
+    width: 250px;
+    padding: 12px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    border: none;
+    font-size: 16px;
+}
+.login-box button {
+    width: 270px;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    background: #0fa23f;
+    color: white;
+    box-shadow: 0 0 10px #0fa23f, 0 0 20px #0fa23f;
+}
+.login-box p {
+    margin-top: 20px;
+    font-size: 14px;
+}
+.login-box a {
+    color: #0fa23f;
+    text-decoration: underline;
+}
 </style>
 </head>
 <body>
 
-<h2>Enter Password</h2>
+<div class="login-box">
+    <h1>Premium Login</h1>
+    <input type="password" id="passwordInput" placeholder="Enter Password" />
+    <button id="loginBtn">Login</button>
+    
+    <!-- Contact Link -->
+    <p>
+        Contact: 
+        <a href="https://t.me/baccarat0987" target="_blank">
+            t.me/baccarat0987
+        </a>
+    </p>
+</div>
 
-<input type="text" id="loginPassword" placeholder="Enter Password">
-<br><br>
-<button onclick="login()">Login</button>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
+<script src="firebase.js"></script>
 
 <script>
-async function login(){
-
-    const enteredPassword = document.getElementById("loginPassword").value;
-
-    if(!enteredPassword){
-        alert("Enter password");
-        return;
-    }
+const loginBtn = document.getElementById("loginBtn");
+loginBtn.addEventListener("click", async () => {
+    const enteredPassword = document.getElementById("passwordInput").value.trim();
+    if(!enteredPassword) return alert("Enter a password!");
 
     const snapshot = await db.collection("memberPasswords")
         .where("password", "==", enteredPassword)
         .get();
 
     if(snapshot.empty){
-        alert("Invalid Password");
+        alert("Invalid password!");
         return;
     }
 
-    let validLogin = false;
-
+    let appName = "";
+    let valid = false;
     snapshot.forEach(doc => {
-
         const data = doc.data();
-
-        if(!data.expiresAt){
-            validLogin = true;
-            window.location.href = data.app + ".html";
-        } else {
-            const now = new Date();
-            const expireDate = data.expiresAt.toDate();
-
-            if(expireDate > now){
-                validLogin = true;
-                window.location.href = data.app + ".html";
-            }
+        const now = new Date();
+        if(!data.expiresAt || data.expiresAt.toDate() > now){
+            valid = true;
+            appName = data.app;
         }
     });
 
-    if(!validLogin){
-        alert("Password Expired");
+    if(!valid){
+        alert("Password expired or invalid!");
+        return;
     }
-}
+
+    // Save for app check
+    localStorage.setItem("userPassword", enteredPassword);
+    localStorage.setItem("userApp", appName);
+
+    // Redirect to the correct app
+    window.location.href = appName + ".html";
+});
 </script>
 
 </body>
