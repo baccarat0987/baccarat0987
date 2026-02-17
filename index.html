@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BACCARAT0987</title>
+<title>My Software Portal Login</title>
 <style>
 body {
-    background: linear-gradient(135deg, #001f3f, #000, #001a2f);
+    background: linear-gradient(135deg, #000022, #001144);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -14,106 +14,96 @@ body {
     font-family: Arial, sans-serif;
     color: white;
 }
+
 .login-box {
-    background: rgba(0,0,0,0.85);
+    background: rgba(0,0,0,0.7);
     padding: 40px;
     border-radius: 12px;
-    text-align: center;
-    box-shadow: 0 0 20px #0fa23f, 0 0 40px #0fa23f, 0 0 60px #0fa23f;
+    box-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
+
 .login-box h1 {
-    font-size: 2.5rem;
-    color: #0fa23f;
-    text-shadow: 0 0 10px #0fa23f, 0 0 20px #0fa23f;
-    margin-bottom: 30px;
-}
-.login-box input {
-    width: 250px;
-    padding: 12px;
     margin-bottom: 20px;
-    border-radius: 8px;
+    text-shadow: 0 0 5px #00ffff, 0 0 15px #00ffff;
+}
+
+input {
+    margin: 10px 0;
+    padding: 12px;
+    border-radius: 6px;
     border: none;
+    width: 250px;
+    text-align: center;
     font-size: 16px;
 }
-.login-box button {
-    width: 270px;
-    padding: 12px;
+
+button {
+    padding: 12px 20px;
+    margin-top: 10px;
+    border-radius: 6px;
     border: none;
-    border-radius: 8px;
-    font-size: 18px;
     font-weight: bold;
     cursor: pointer;
-    background: #0fa23f;
-    color: white;
-    box-shadow: 0 0 10px #0fa23f, 0 0 20px #0fa23f;
+    background: #00ffff;
+    color: #000022;
+    box-shadow: 0 0 10px #00ffff;
 }
-.login-box p {
-    margin-top: 20px;
-    font-size: 14px;
-}
-.login-box a {
-    color: #0fa23f;
-    text-decoration: underline;
-}
+a { color: #00ffff; text-decoration: none; margin-top:10px;}
 </style>
 </head>
 <body>
 
 <div class="login-box">
-    <h1>Baccarat0987</h1>
-    <input type="password" id="passwordInput" placeholder="Enter Password" />
+    <h1>Login</h1>
+    <input type="text" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Password">
     <button id="loginBtn">Login</button>
-    
-    <!-- Contact Link -->
-    <p>
-        Contact: 
-        <a href="https://t.me/baccarat0987" target="_blank">
-            t.me/baccarat0987
-        </a>
-    </p>
+    <a href="register.html">Contact t.me/baccarat0987</a>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
 <script src="firebase.js"></script>
 
 <script>
-const loginBtn = document.getElementById("loginBtn");
-loginBtn.addEventListener("click", async () => {
-    const enteredPassword = document.getElementById("passwordInput").value.trim();
-    if(!enteredPassword) return alert("Enter a password!");
+const auth = firebase.auth();
+const db = firebase.firestore();
 
-    const snapshot = await db.collection("memberPasswords")
-        .where("password", "==", enteredPassword)
-        .get();
+document.getElementById('loginBtn').addEventListener('click', async ()=>{
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    if(!email || !password){ alert("Fill both fields"); return; }
 
-    if(snapshot.empty){
-        alert("Invalid password!");
-        return;
-    }
+    try {
+        const userCredential = await auth.signInWithEmailAndPassword(email, password);
+        const user = userCredential.user;
 
-    let appName = "";
-    let valid = false;
-    snapshot.forEach(doc => {
-        const data = doc.data();
+        // Check Firestore password info
+        const docRef = db.collection("memberPasswords").doc(user.uid);
+        const docSnap = await docRef.get();
+        if(!docSnap.exists){ await auth.signOut(); alert("Access denied"); return; }
+
+        const data = docSnap.data();
         const now = new Date();
-        if(!data.expiresAt || data.expiresAt.toDate() > now){
-            valid = true;
-            appName = data.app;
+
+        if(data.expiresAt.toDate() < now){
+            alert("Password expired"); await auth.signOut(); return;
         }
-    });
 
-    if(!valid){
-        alert("Password expired or invalid!");
-        return;
+        // Redirect to assigned app
+        if(data.app === "viper-roulette") window.location.href = "viper-roulette.html";
+        else if(data.app === "app2") window.location.href = "app2.html";
+        else if(data.app === "app3") window.location.href = "app3.html";
+        // … repeat for all 10 apps
+        else alert("App not found");
+
+    } catch(err){
+        alert(err.message);
     }
-
-    // Save for app check
-    localStorage.setItem("userPassword", enteredPassword);
-    localStorage.setItem("userApp", appName);
-
-    // Redirect to the correct app
-    window.location.href = appName + ".html";
 });
 </script>
 
