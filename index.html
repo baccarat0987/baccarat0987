@@ -3,135 +3,59 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>My Software Portal - Login</title>
+<title>SOFTWARE</title>
 <style>
-body {
-    background: linear-gradient(135deg, #001f3f, #000000);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    color: white;
-    font-family: Arial, sans-serif;
-}
-.login-container {
-    background: rgba(0,0,0,0.85);
-    padding: 40px;
-    border-radius: 15px;
-    box-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff inset;
-    text-align: center;
-    width: 350px;
-}
-h1 {
-    text-shadow: 0 0 10px #00ffff;
-    margin-bottom: 25px;
-}
-input, button {
-    width: 100%;
-    padding: 12px;
-    margin: 10px 0;
-    border-radius: 8px;
-    border: none;
-    font-size: 16px;
-}
-button {
-    background: linear-gradient(45deg, #001f3f, #000000);
-    color: #fff;
-    font-weight: bold;
-    text-shadow: 0 0 5px #00ffff;
-    cursor: pointer;
-    box-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff inset;
-    transition: 0.3s;
-}
-button:hover {
-    transform: scale(1.05);
-    box-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff inset;
-}
-.message {
-    margin-top: 15px;
-    font-weight: bold;
-    color: lime;
-}
-.contact {
-    margin-top: 10px;
-    font-size: 14px;
-}
-.contact a {
-    color: #00ffff;
-    text-decoration: none;
-}
-.contact a:hover {
-    text-decoration: underline;
-}
+body{background:linear-gradient(135deg,#001f3f,#000);color:#fff;font-family:Arial;height:100vh;display:flex;justify-content:center;align-items:center;}
+.login-container{background:rgba(0,0,0,0.85);padding:40px;border-radius:15px;text-align:center;width:350px;box-shadow:0 0 20px #00ffff;}
+input,button{width:100%;padding:12px;margin:10px 0;border-radius:8px;border:none;font-size:16px;}
+button{background:linear-gradient(45deg,#001f3f,#000);color:#fff;font-weight:bold;cursor:pointer;box-shadow:0 0 10px #00ffff;transition:.3s;}
+button:hover{transform:scale(1.05);box-shadow:0 0 20px #00ffff;}
+.message{margin-top:15px;font-weight:bold;color:red;}
+.contact{margin-top:10px;color:#00ffff;}
+.contact a{text-decoration:none;color:#00ffff;}
 </style>
 </head>
-
 <body>
-
 <div class="login-container">
-  <h1>Login</h1>
-  <input type="text" id="passwordInput" placeholder="Enter your password only">
-  <button id="loginBtn">Login</button>
-  <div class="message" id="message"></div>
-  <div class="contact">Contact <a href="https://t.me/baccarat0987" target="_blank">t.me/baccarat0987</a></div>
+<h1>LOGIN</h1>
+<input type="text" id="passwordInput" placeholder="Enter your password">
+<button id="loginBtn">Login</button>
+<div class="message" id="message"></div>
+<div class="contact"><a href="https://t.me/baccarat0987" target="_blank">Contact t.me/baccarat0987</a></div>
 </div>
 
 <script type="module">
-import { db, collection, getDocs, query, where, Timestamp } from './firebase.js';
+import { db, collection, query, where, getDocs, Timestamp } from './firebase.js';
 
-const passwordInput = document.getElementById('passwordInput');
-const loginBtn = document.getElementById('loginBtn');
-const message = document.getElementById('message');
+const passwordInput=document.getElementById('passwordInput');
+const loginBtn=document.getElementById('loginBtn');
+const message=document.getElementById('message');
 
-loginBtn.addEventListener('click', async () => {
-    const password = passwordInput.value.trim();
-    if(!password) {
-        message.style.color = "red";
-        message.textContent = "Enter a password!";
-        return;
-    }
+loginBtn.addEventListener('click', async ()=>{
+  const password=passwordInput.value.trim();
+  if(!password){message.textContent="Enter password!"; return;}
 
-    try {
-        const q = query(collection(db, "memberPasswords"), where("password", "==", password));
-        const querySnapshot = await getDocs(q);
+  const q=query(collection(db,"memberPasswords"), where("password","==",password));
+  const snap=await getDocs(q);
 
-        if(querySnapshot.empty) {
-            message.style.color = "red";
-            message.textContent = "Invalid password!";
-            return;
-        }
+  if(snap.empty){message.textContent="Invalid password"; return;}
 
-        const docData = querySnapshot.docs[0].data();
+  let valid=false;
+  let appFile="";
+  snap.forEach(doc=>{
+    const data=doc.data();
+    if(!data.expiresAt || data.expiresAt.toMillis()>Date.now()){ valid=true; appFile=data.app; }
+  });
 
-        // Check expiration
-        if(docData.expiresAt && docData.expiresAt.toDate() < new Date()) {
-            message.style.color = "red";
-            message.textContent = "This password has expired!";
-            return;
-        }
+  if(!valid){message.textContent="Password expired!"; return;}
 
-        // ✅ Store session in browser
-        sessionStorage.setItem("loggedApp", docData.app);
-        if(docData.expiresAt) {
-            sessionStorage.setItem("expiresAt", docData.expiresAt.toDate());
-        } else {
-            sessionStorage.removeItem("expiresAt"); // LIFETIME password
-        }
+  // ✅ store session
+  localStorage.setItem('loggedIn','true');
+  localStorage.setItem('allowedApp',appFile);
+  localStorage.setItem('expiresAt',snap.docs[0].data().expiresAt ? snap.docs[0].data().expiresAt.toMillis() : 0);
 
-        message.style.color = "lime";
-        message.textContent = "Login successful! Redirecting...";
-
-        // Redirect to the correct app
-        setTimeout(() => {
-            window.location.href = `${docData.app}.html`;
-        }, 1000);
-
-    } catch(err) {
-        message.style.color = "red";
-        message.textContent = "Error: " + err.message;
-    }
+  window.location.href="apps/"+appFile;
 });
 </script>
-
 </body>
 </html>
