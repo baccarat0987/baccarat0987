@@ -1,129 +1,68 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Admin - Create Password</title>
-
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="firebase.js"></script>
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin - Create Member Password</title>
 <style>
-body { 
-    background:#111; 
-    color:white; 
-    text-align:center; 
-    font-family:Arial; 
-    margin-top:50px; 
-}
-
-select, input, button { 
-    padding:10px; 
-    margin:10px; 
-    font-size:16px; 
-}
-
-button {
-    background:#00c853;
-    color:white;
-    border:none;
-    cursor:pointer;
-}
-
-button:hover {
-    background:#00e676;
-}
-
-#message {
-    margin-top:20px;
-    font-size:18px;
-    font-weight:bold;
-}
-.success {
-    color:#00ff00;
-}
-.error {
-    color:#ff4444;
-}
+body { background:#001144; color:white; font-family:Arial; display:flex; justify-content:center; align-items:center; height:100vh; }
+.admin-box { background:rgba(0,0,0,0.8); padding:30px; border-radius:12px; box-shadow:0 0 20px #00ffff; display:flex; flex-direction:column; align-items:center; }
+input, select { margin:10px 0; padding:12px; width:250px; border-radius:6px; border:none; text-align:center; }
+button { padding:12px 20px; margin-top:10px; border-radius:6px; border:none; font-weight:bold; cursor:pointer; background:#00ffff; color:#000022; }
 </style>
 </head>
 <body>
 
-<h2>Create Password</h2>
-
+<div class="admin-box">
+<h1>Create Member Password</h1>
+<input type="email" id="email" placeholder="Member Email">
+<input type="password" id="password" placeholder="Member Password">
 <select id="appSelect">
-<option value="viper-roulette">Viper Roulette</option>
-<option value="ai-card-counting">AI CARD COUNTING</option>
-<option value="baccarat-predictor">BACCARAT PREDICTOR</option>
-<option value="baccarat-pro">Baccart PRO</option>
-<option value="gemini-ultra-vip">Gemini ULTRA VIP</option>
-<option value="google-ai-baccarat">Google AI Baccarat</option>
-<option value="visionwave-baccarat-pro">VisionWave Baccarat PRO</option>
-<option value="baccarat-analysis-ultra">Baccarat Analysis ULTRA</option>
-<option value="baccarat-zerotrace">Baccarat ZEROTRACE</option>
-<option value="ai-baccarat-trend">AI BACCARAT TREND</option>
+    <option value="viper-roulette">VIPER ROULETTE</option>
+    <option value="app2">APP2</option>
+    <option value="app3">APP3</option>
+    <option value="app4">APP4</option>
+    <option value="app5">APP5</option>
+    <option value="app6">APP6</option>
+    <option value="app7">APP7</option>
+    <option value="app8">APP8</option>
+    <option value="app9">APP9</option>
+    <option value="app10">APP10</option>
 </select>
+<input type="date" id="expireDate">
+<button id="createBtn">Create Member</button>
+</div>
 
-<br>
-
-<input type="text" id="password" placeholder="Enter Password">
-
-<br>
-
-<select id="expiration">
-<option value="5">5 Minutes</option>
-<option value="60">1 Hour</option>
-<option value="10080">7 Days</option>
-<option value="21600">15 Days</option>
-<option value="43200">30 Days</option>
-<option value="0">Lifetime</option>
-</select>
-
-<br>
-
-<button onclick="createPassword()">Create Password</button>
-
-<div id="message"></div>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
+<script src="firebase.js"></script>
 
 <script>
-async function createPassword(){
+const auth = firebase.auth();
+const db = firebase.firestore();
 
-    const app = document.getElementById("appSelect").value;
-    const password = document.getElementById("password").value.trim();
-    const expiration = parseInt(document.getElementById("expiration").value);
-    const messageBox = document.getElementById("message");
-
-    messageBox.innerHTML = "";
-
-    if(!password){
-        messageBox.innerHTML = "⚠ Please enter a password.";
-        messageBox.className = "error";
-        return;
-    }
-
-    let expiresAt = null;
-
-    if(expiration !== 0){
-        expiresAt = new Date(Date.now() + expiration * 60000);
-    }
+document.getElementById('createBtn').addEventListener('click', async ()=>{
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const app = document.getElementById('appSelect').value;
+    const expire = document.getElementById('expireDate').value;
+    if(!email||!password||!app||!expire){ alert("Fill all fields"); return; }
 
     try {
-        await db.collection("memberPasswords").add({
+        // Create Firebase Auth user
+        const userCredential = await auth.createUserWithEmailAndPassword(email,password);
+        const uid = userCredential.user.uid;
+
+        // Add Firestore info
+        await db.collection("memberPasswords").doc(uid).set({
             app: app,
             password: password,
-            expiresAt: expiresAt
+            expiresAt: new Date(expire)
         });
-
-        messageBox.innerHTML = "✅ Successfully Registered!";
-        messageBox.className = "success";
-
-        document.getElementById("password").value = "";
-
-    } catch(error) {
-        console.error(error);
-        messageBox.innerHTML = "❌ Error registering password.";
-        messageBox.className = "error";
-    }
-}
+        alert("Member created successfully!");
+    } catch(err){ alert(err.message); }
+});
 </script>
 
 </body>
