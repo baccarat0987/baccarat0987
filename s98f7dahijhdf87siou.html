@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>BACCARAT ZEROTRACE Predictor</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+body {
+    background-color: #0a0a0a;
+    font-family: 'Share Tech Mono', monospace;
+    color: #00ffff;
+    margin: 0;
+    padding: 20px;
+    box-sizing: border-box;
+}
+.container { max-width: 600px; margin: 0 auto; }
+.logo { text-align: center; font-size: 32px; font-weight: bold; color: #00ffff; margin-bottom: 20px; text-shadow: 0 0 5px #00ffff,0 0 10px #00ffff; }
+.forecast-container { background-color: #0a0a0a; padding: 20px; border: 1px solid #00ffff; margin-bottom: 20px; text-align: center; font-size: 1.5em; }
+.input-display { display: flex; overflow-x: auto; margin-bottom: 20px; border: 1px solid #00ffff; padding: 10px; background-color: #0a0a0a; }
+.input-char { width: 24px; height: 24px; line-height: 24px; text-align: center; margin: 0 2px; font-weight: bold; font-size: 14px; }
+.input-B { color: #ff00ff; }
+.input-P { color: #00ffff; }
+.buttons { display: flex; justify-content: space-between; margin-bottom: 20px; }
+.button-container { flex: 1; margin: 0 5px; }
+.button { width: 100%; padding: 10px; font-size: 16px; color: #00ffff; background-color: #0a0a0a; border: 1px solid #00ffff; cursor: pointer; font-family: inherit; font-weight: bold; position: relative; overflow: hidden; }
+.button::before { content: ''; position: absolute; top:0; left:-100%; width:100%; height:100%; background: rgba(0,255,255,0.1); transition: left 0.3s; }
+.button:hover::before { left: 0; }
+.button:hover { background-color: #00ffff; color: #0a0a0a; }
+.chart-container { width:100%; height:300px; margin-bottom:20px; }
+.bet-suggestion { text-align:center; margin-bottom:20px; font-size:1.3em; color:#ffcc00; }
+.message { text-align:center; font-size:1.5em; color:#ff0000; margin-bottom:20px; }
+.footer { text-align:center; color:#00ffff; font-size:14px; margin-top:20px; }
+.footer a { color:#ff00ff; text-decoration:none; }
+.hide { display:none; }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+    <div class="logo">BACCARAT ZEROTRACE</div>
+
+    <div class="forecast-container" id="forecast">Waiting...</div>
+    <div class="bet-suggestion hide" id="bet-suggestion">Bet: --</div>
+
+    <div class="message hide" id="message"></div>
+
+    <div id="lost-reset-container" class="hide" style="text-align:center; margin-top:10px;">
+        <button class="button" onclick="resetAfterLoss()">RESET</button>
+    </div>
+
+    <div class="input-display" id="input-display"></div>
+
+    <div class="buttons" id="buttons-container">
+        <div class="button-container"><button class="button" onclick="addInput('P')">Player</button></div>
+        <div class="button-container"><button class="button" onclick="addInput('B')">Banker</button></div>
+        <div class="button-container"><button class="button" onclick="undoAction()">Undo</button></div>
+        <div class="button-container"><button class="button" id="reset-button" onclick="resetAll()">Reset</button></div>
+    </div>
+
+    <div class="chart-container" id="chart-container"><canvas id="winLossChart"></canvas></div>
+    <div class="footer">@baccarat0987</div>
+</div>
+
+<script>
+// ✅ SESSION CHECK
+const loggedIn = localStorage.getItem('loggedIn');
+const allowedApp = localStorage.getItem('allowedApp');
+const expiresAt = Number(localStorage.getItem('expiresAt'));
+
+if (loggedIn !== 'true' || allowedApp !== 's98f7dahijhdf87siou' || (expiresAt && expiresAt < Date.now())) {
+    alert("Please login first!");
+    localStorage.removeItem('loggedIn');
+    localStorage.removeItem('allowedApp');
+    localStorage.removeItem('expiresAt');
+    window.location.href = "index.html"; // redirect to login
+}
+
+// --- BACCARAT ZEROTRACE Logic ---
+let history = [];
+const maxHistory = 15;
+const bets = [100, 300, 900, 2700, 8100, 24300];
+let currentBetIndex = 0;
+let lastPrediction = null;
+let lastResultWasWrong = false;
+let undoStack = [];
+
+const inputDisplay = document.getElementById('input-display');
+const forecastDisplay = document.getElementById('forecast');
+const betDisplay = document.getElementById('bet-suggestion');
+const messageDisplay = document.getElementById('message');
+const buttonsContainer = document.getElementById('buttons-container');
+const chartContainer = document.getElementById('chart-container');
+let chart;
+
+// === Functions ===
+function getPrediction() {
+    if (history.length < 7) return null;
+    const stats = history.map(h => h === 'P' ? 1 : -1);
+    let cumulative = [];
+    let sum = 0;
+    stats.forEach(v => { sum += v; cumulative.push(sum); });
+
+    const windowSize = 5;
+    const recent = cumulative.slice(-windowSize);
+    if (recent.length < 3) return null;
+    const diffs = recent.slice(1).map((v,i) => v - recent[i]);
+    const avgTrend = diffs.reduce((a,b)=>a+b,0)/diffs.length;
+
+    return avgTrend > 0 ? 'P' : avgTrend < 0 ? 'B' : null;
+}
+
+function saveState() {
+    undoStack.push({
+        history: [...history],
+        currentBetIndex,
+        lastPrediction,
+        lastResultWasWrong,
+        forecast: forecastDisplay.textContent,
+        bet: betDisplay.textContent,
+        message: messageDisplay.textContent,
+        hideStates: {
+            message: messageDisplay.classList.contains('hide'),
+            bet: betDisplay.classList.contains('hide'),
+            forecast: forecastDisplay.classList.contains('hide'),
+            buttons: buttonsContainer.classList.contains('hide'),
+            chart: chartContainer.classList.contains('hide'),
+            input: inputDisplay.classList.contains('hide'),
+            lostReset: document.getElementById('lost-reset-container').classList.contains('hide')
+        }
+    });
+    if (undoStack.length > 10) undoStack.shift();
+}
+
+function undoAction() {
+    if (undoStack.length === 0) return;
+    const last = undoStack.pop();
+    history = [...last.history];
+    currentBetIndex = last.currentBetIndex;
+    lastPrediction = last.lastPrediction;
+    lastResultWasWrong = last.lastResultWasWrong;
+    forecastDisplay.textContent = last.forecast;
+    betDisplay.textContent = last.bet;
+    messageDisplay.textContent = last.message;
+
+    for (const [key, hidden] of Object.entries(last.hideStates)) {
+        const el = { message: messageDisplay, bet: betDisplay, forecast: forecastDisplay, buttons: buttonsContainer, chart: chartContainer, input: inputDisplay, lostReset: document.getElementById('lost-reset-container') }[key];
+        if (hidden) el.classList.add('hide'); else el.classList.remove('hide');
+    }
+    updateDisplay(); updateForecast(); updateChart();
+}
+
+function addInput(type){
+    saveState();
+    history.push(type);
+    if(history.length > maxHistory) history.shift();
+    processPrediction(type);
+    updateDisplay(); updateForecast(); updateChart();
+}
+
+function resetAll(){
+    saveState();
+    history = [];
+    currentBetIndex = 0;
+    lastPrediction = null;
+    lastResultWasWrong = false;
+    messageDisplay.classList.add('hide');
+    document.getElementById('lost-reset-container').classList.add('hide');
+    buttonsContainer.classList.remove('hide');
+    chartContainer.classList.remove('hide');
+    inputDisplay.classList.remove('hide');
+    forecastDisplay.classList.remove('hide');
+    betDisplay.classList.add('hide');
+    forecastDisplay.textContent = "Waiting...";
+    updateDisplay(); updateForecast(); updateChart();
+}
+
+function resetAfterLoss(){ resetAll(); }
+
+function updateDisplay(){
+    inputDisplay.innerHTML = '';
+    history.forEach(h => {
+        const span = document.createElement('span');
+        span.className = 'input-char ' + (h==='P'?'input-P':'input-B');
+        span.textContent = h;
+        inputDisplay.appendChild(span);
+    });
+}
+
+function processPrediction(latestInput){
+    const prediction = getPrediction();
+    if(lastPrediction !== null){
+        if(lastPrediction === latestInput){ currentBetIndex = 0; lastResultWasWrong=false; }
+        else{ currentBetIndex++; lastResultWasWrong=true;
+            if(currentBetIndex >= bets.length){
+                buttonsContainer.classList.add('hide');
+                chartContainer.classList.add('hide');
+                inputDisplay.classList.add('hide');
+                forecastDisplay.classList.add('hide');
+                betDisplay.classList.add('hide');
+                messageDisplay.textContent = "TRY AGAIN! PLEASE CLICK RESET.";
+                messageDisplay.classList.remove('hide');
+                document.getElementById('lost-reset-container').classList.remove('hide');
+                return;
+            }
+        }
+    }
+    lastPrediction = prediction;
+}
+
+function updateForecast(){
+    const prediction = getPrediction();
+    if(prediction){
+        forecastDisplay.textContent = prediction === 'P' ? "Next: Player" : "Next: Banker";
+        const betIndex = Math.min(currentBetIndex, bets.length-1);
+        betDisplay.textContent = `Bet: ${bets[betIndex]}`;
+        betDisplay.classList.remove('hide');
+    } else { forecastDisplay.textContent = "Waiting..."; betDisplay.classList.add('hide'); }
+}
+
+function updateChart(){
+    const stats = history.map(h => h==='P'?1:-1);
+    let cumulative=[], sum=0;
+    stats.forEach(v=>{ sum+=v; cumulative.push(sum); });
+    const labels = cumulative.map((_,i)=>i+1);
+    let min = Math.min(...cumulative,0), max=Math.max(...cumulative,0);
+    let minIndex = cumulative.indexOf(min)+1, maxIndex = cumulative.indexOf(max)+1;
+
+    if(chart) chart.destroy();
+    const ctx = document.getElementById('winLossChart').getContext('2d');
+    chart = new Chart(ctx,{
+        type:'line',
+        data:{ labels, datasets:[{ label:'Win/Loss', data:cumulative, fill:false, borderColor:'#00ffff', backgroundColor:'#00ffff', borderWidth:1, pointRadius:3, pointBackgroundColor: stats.map(v=>v===1?'#00ffff':'#ff00ff'), tension:0.1 }]},
+        options:{
+            responsive:true,
+            animation:{duration:500},
+            scales:{y:{ticks:{color:'#00ffff'},grid:{color:'#444'}}, x:{ticks:{color:'#00ffff'},grid:{color:'#444'}}},
+            plugins:{
+                legend:{display:false},
+                annotation:{
+                    annotations:{
+                        zeroLine:{type:'line', yMin:0, yMax:0, borderColor:'#ff00ff', borderWidth:2},
+                        minPoint:{type:'point', xValue:minIndex, yValue:min, backgroundColor:'#ff00ff', radius:5},
+                        maxPoint:{type:'point', xValue:maxIndex, yValue:max, backgroundColor:'#00ffff', radius:5}
+                    }
+                }
+            }
+        },
+        plugins:[Chart.registry.getPlugin('annotation')]
+    });
+}
+
+updateChart();
+</script>
+</body>
+</html>
