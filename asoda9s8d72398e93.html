@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AI Card Counting</title>
+<link rel="icon" href="icon.ico" type="image/x-icon">
+<style>
+body {
+  background: linear-gradient(135deg, #0d0d0d, #1a1a1a);
+  color: #fff;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+.container { max-width: 600px; margin: 20px auto; padding: 20px; }
+h1 { text-align: center; margin-bottom: 5px; font-size: 2em; }
+.tagline { text-align: center; font-size: 0.9em; font-style: italic; margin-bottom: 20px; color: #ccc; }
+/* Prediction Box */
+.prediction {
+  background: linear-gradient(145deg, #1b1b1b, #2c2c2c);
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  margin-bottom: 20px;
+  min-height: 80px;
+  box-shadow: 0 0 20px rgba(255,255,255,0.2);
+  position: relative;
+  font-size: 1.5em;
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+.prediction.flash {
+  box-shadow: 0 0 25px 5px #ffd700, 0 0 30px 10px #ffcc00 inset;
+  transform: scale(1.05);
+}
+.prediction .calculating-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(44, 62, 80, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5em;
+  font-weight: bold;
+  z-index: 2;
+  border-radius: 8px;
+  display: none;
+}
+.pred-side {
+  display: inline-block;
+  padding: 10px 16px;
+  margin: 0 10px;
+  border-radius: 5px;
+  font-weight: bold;
+  min-width: 70px;
+  text-align: center;
+  background-color: #1a1a1a;
+  border: 2px solid #ffd700;
+  animation: shimmer 0.6s linear;
+}
+@keyframes shimmer {
+  0% { box-shadow: 0 0 10px #ffd700, 0 0 20px #ffcc00 inset; }
+  50% { box-shadow: 0 0 15px #ffe066, 0 0 25px #ffdd33 inset; }
+  100% { box-shadow: 0 0 10px #ffd700, 0 0 20px #ffcc00 inset; }
+}
+.player-text {
+  color: #3498db;
+  font-weight: bold;
+  text-shadow: 0 0 8px #3498db;
+}
+.banker-text {
+  color: #e74c3c;
+  font-weight: bold;
+  text-shadow: 0 0 8px #e74c3c;
+}
+/* Buttons & Columns */
+.control-buttons { display: flex; justify-content: space-between; margin-bottom: 20px; }
+.control-buttons form { width: 48%; }
+.action-btn {
+  background-color: #8e44ad; color: #fff; border: none; padding: 14px 24px;
+  font-size: 20px; border-radius: 5px; cursor: pointer; width: 100%;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+}
+.action-btn:hover { background-color: #732d91; box-shadow: 0 6px 12px rgba(0,0,0,0.6); }
+
+.score-input { display: flex; gap: 10px; margin-bottom: 10px; }
+.score-column {
+  flex: 1; padding: 15px; border-radius: 8px; text-align: center;
+  background-color: #2c2c2c; box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+}
+.score-column h3 { margin: 0 0 10px 0; font-size: 1.3em; }
+.score-column h3 span { font-size: 1.3em; margin-left: 5px; color: #ffd700; }
+.button-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+.score-btn {
+  background-color: #1a1a1a; color: #fff; border: 1px solid #3d3d3d; padding: 10px 15px;
+  font-size: 16px; cursor: pointer; border-radius: 5px; flex: 1 0 28%; text-align: center;
+  transition: background-color 0.2s ease;
+}
+.score-btn:hover { background-color: #333; }
+.score-btn.selected { background-color: #ffd700; color: #1a1a1a; font-weight: bold; }
+.submit-container { margin-top: 30px; text-align: center; }
+.submit-btn {
+  background-color: #ffd700; color: #1a1a1a; border: none; padding: 14px 24px;
+  font-size: 20px; border-radius: 5px; cursor: pointer;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 0 10px #ffd700, 0 0 15px #ffcc00 inset;
+}
+.submit-btn:hover { background-color: #ffdd33; box-shadow: 0 0 15px #ffe066, 0 0 20px #ffd633 inset; }
+.stats-container { display: flex; gap: 10px; margin-top: 40px; flex-wrap: wrap; }
+.stats-box { flex: 1; min-width: 280px; background-color: #1f1f1f; padding: 10px; border-radius: 5px; text-align: center; }
+.stats-box h2 { margin-top: 0; font-size: 1.2em; border-bottom: 1px solid #3d3d3d; padding-bottom: 5px; margin-bottom: 10px; }
+.win-icon { background-color: #2ecc71; color: #fff; padding: 5px 10px; border-radius: 3px; margin: 2px; font-weight: bold; display: inline-block; }
+.lose-icon { background-color: #e74c3c; color: #fff; padding: 5px 10px; border-radius: 3px; margin: 2px; font-weight: bold; display: inline-block; }
+.round-history span { display: inline-block; width: 30px; height: 30px; line-height: 30px; margin: 2px; border-radius: 50%; font-weight: bold; color: #fff; }
+.round-outcome.B { background-color: #e74c3c; }
+.round-outcome.P { background-color: #3498db; }
+.round-outcome.T { background-color: #27ae60; }
+.footer { text-align: center; font-size: 12px; color: #aaa; }
+</style>
+</head>
+<body>
+
+<script>
+// ✅ SESSION CHECK
+const loggedIn = localStorage.getItem('loggedIn');
+const allowedApp = localStorage.getItem('allowedApp');
+const expiresAt = Number(localStorage.getItem('expiresAt'));
+
+if (loggedIn !== 'true' || allowedApp !== 'asoda9s8d72398e93' || (expiresAt && expiresAt < Date.now())) {
+    alert("Please login first!");
+    localStorage.removeItem('loggedIn');
+    localStorage.removeItem('allowedApp');
+    localStorage.removeItem('expiresAt');
+    window.location.href = "index.html"; // redirect to login
+}
+</script>
+
+<div class="container">
+<h1>AI Card Counting</h1>
+<div class="tagline">Master Baccarat with AI</div>
+
+<div class="prediction">
+  <div class="calculating-overlay">Calculating...</div>
+  <p>Click submit to see prediction!</p>
+</div>
+
+<div class="control-buttons">
+  <form><button type="button" id="deleteBtn" class="action-btn">Delete Last Input</button></form>
+  <form><button type="button" id="resetBtn" class="action-btn">Reset Data</button></form>
+</div>
+
+<form id="scoreForm">
+  <div class="score-input">
+    <div class="score-column" id="player-column">
+      <h3>Player <span id="playerScoreDisplay">0</span></h3>
+      <div class="button-grid">
+        <button type="button" class="score-btn" data-side="player" data-value="1">1</button>
+        <button type="button" class="score-btn" data-side="player" data-value="2">2</button>
+        <button type="button" class="score-btn" data-side="player" data-value="3">3</button>
+        <button type="button" class="score-btn" data-side="player" data-value="4">4</button>
+        <button type="button" class="score-btn" data-side="player" data-value="5">5</button>
+        <button type="button" class="score-btn" data-side="player" data-value="6">6</button>
+        <button type="button" class="score-btn" data-side="player" data-value="7">7</button>
+        <button type="button" class="score-btn" data-side="player" data-value="8">8</button>
+        <button type="button" class="score-btn" data-side="player" data-value="9">9</button>
+      </div>
+      <input type="hidden" id="playerInput" value="0">
+    </div>
+    <div class="score-column" id="banker-column">
+      <h3>Banker <span id="bankerScoreDisplay">0</span></h3>
+      <div class="button-grid">
+        <button type="button" class="score-btn" data-side="banker" data-value="1">1</button>
+        <button type="button" class="score-btn" data-side="banker" data-value="2">2</button>
+        <button type="button" class="score-btn" data-side="banker" data-value="3">3</button>
+        <button type="button" class="score-btn" data-side="banker" data-value="4">4</button>
+        <button type="button" class="score-btn" data-side="banker" data-value="5">5</button>
+        <button type="button" class="score-btn" data-side="banker" data-value="6">6</button>
+        <button type="button" class="score-btn" data-side="banker" data-value="7">7</button>
+        <button type="button" class="score-btn" data-side="banker" data-value="8">8</button>
+        <button type="button" class="score-btn" data-side="banker" data-value="9">9</button>
+      </div>
+      <input type="hidden" id="bankerInput" value="0">
+    </div>
+  </div>
+  <div class="submit-container">
+    <button type="button" id="submitRoundBtn" class="submit-btn">Submit Round</button>
+  </div>
+</form>
+
+<div class="stats-container">
+  <div class="stats-box">
+    <h2>Win/lose History</h2>
+    <div id="history"></div>
+  </div>
+  <div class="stats-box">
+    <h2>Round History</h2>
+    <div class="round-history" id="roundHistory"></div>
+  </div>
+</div>
+
+<div class="footer">
+  <p></p>
+</div>
+</div>
+
+<script>
+// --- Original AI Card Counting JS ---
+document.addEventListener("DOMContentLoaded", function() {
+  const buttons = document.querySelectorAll(".score-btn");
+  const playerScoreDisplay = document.getElementById("playerScoreDisplay");
+  const bankerScoreDisplay = document.getElementById("bankerScoreDisplay");
+  const predictionElement = document.querySelector(".prediction p");
+  const overlay = document.querySelector(".calculating-overlay");
+  let pastRounds = [];
+
+  buttons.forEach(btn => {
+    btn.addEventListener("click", function() {
+      const side = this.dataset.side;
+      const value = this.dataset.value;
+      if(side === "player") {
+        playerScoreDisplay.textContent = value;
+        document.querySelectorAll("button[data-side='player']").forEach(b=>b.classList.remove("selected"));
+      } else {
+        bankerScoreDisplay.textContent = value;
+        document.querySelectorAll("button[data-side='banker']").forEach(b=>b.classList.remove("selected"));
+      }
+      this.classList.add("selected");
+    });
+  });
+
+  function generatePrediction() {
+    const sides = ['player','banker'];
+    const chosenSide = sides[Math.floor(Math.random()*2)];
+    const points = Math.floor(Math.random()*3)+7; // 7-9 points
+    const html = chosenSide==='player' ?
+      `<span class="player-text">PLAYER</span> <span class="pred-side">${points} points</span>` :
+      `<span class="banker-text">BANKER</span> <span class="pred-side">${points} points</span>`;
+    predictionElement.innerHTML = html;
+    document.querySelector(".prediction").classList.add("flash");
+    setTimeout(()=>{document.querySelector(".prediction").classList.remove("flash");},600);
+    return {side: chosenSide, points};
+  }
+
+  document.getElementById("submitRoundBtn").addEventListener("click", () => {
+    const pScore = parseInt(playerScoreDisplay.textContent)||0;
+    const bScore = parseInt(bankerScoreDisplay.textContent)||0;
+    if(pScore===0 && bScore===0) return;
+
+    overlay.style.display = "flex";
+
+    setTimeout(()=>{
+      overlay.style.display="none";
+      const prediction = generatePrediction();
+
+      pastRounds.push({player:pScore, banker:bScore, prediction});
+
+      // Update round history
+      const roundHistory = document.getElementById("roundHistory");
+      const outcomeClass = pScore>bScore?'P':bScore>pScore?'B':'T';
+      const span = document.createElement('span');
+      span.className = 'round-outcome '+outcomeClass;
+      span.textContent = outcomeClass;
+      roundHistory.appendChild(span);
+
+      // Win/Lose history only if not first round and not tie
+      if(pastRounds.length > 1 && outcomeClass!=='T'){
+        const history = document.getElementById("history");
+        const prevRound = pastRounds[pastRounds.length-2];
+        const predictedSide = prevRound.prediction.side==='player'?'P':'B';
+        const winLoseSpan = document.createElement('span');
+        winLoseSpan.textContent = (predictedSide===outcomeClass)?'W':'L';
+        winLoseSpan.className = (winLoseSpan.textContent==='W')?'win-icon':'lose-icon';
+        history.appendChild(winLoseSpan);
+      }
+
+      // Reset scores
+      playerScoreDisplay.textContent = 0;
+      bankerScoreDisplay.textContent = 0;
+      document.querySelectorAll('.score-btn').forEach(b=>b.classList.remove('selected'));
+    },800);
+  });
+
+  document.getElementById("resetBtn").addEventListener("click", ()=>{
+    pastRounds.length=0;
+    predictionElement.textContent="Click submit to see prediction!";
+    playerScoreDisplay.textContent=0;
+    bankerScoreDisplay.textContent=0;
+    document.querySelectorAll('.score-btn').forEach(b=>b.classList.remove('selected'));
+    document.getElementById("history").innerHTML='';
+    document.getElementById("roundHistory").innerHTML='';
+  });
+
+  document.getElementById("deleteBtn").addEventListener("click", ()=>{
+    if(pastRounds.length === 0) return;
+    pastRounds.pop();
+    const roundHistory = document.getElementById("roundHistory");
+    if(roundHistory.lastChild) roundHistory.removeChild(roundHistory.lastChild);
+    const history = document.getElementById("history");
+    if(history.lastChild) history.removeChild(history.lastChild);
+    // Restore previous prediction
+    if(pastRounds.length > 0){
+        const prevPred = pastRounds[pastRounds.length - 1].prediction;
+        predictionElement.innerHTML = prevPred.side === 'player' ?
+            `<span class="player-text">PLAYER</span> <span class="pred-side">${prevPred.points} points</span>` :
+            `<span class="banker-text">BANKER</span> <span class="pred-side">${prevPred.points} points</span>`;
+    } else {
+        predictionElement.textContent = "Click submit to see prediction!";
+    }
+  });
+});
+</script>
+
+</body>
+</html>
