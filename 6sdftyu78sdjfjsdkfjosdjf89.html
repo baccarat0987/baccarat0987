@@ -45,15 +45,11 @@ body {
     color: #fff;
     border: none;
     cursor: pointer;
-    transition: all 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 10px;
     font-weight: bold;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 0 15px rgba(0,0,0,0.1);
 }
 .button-P { background: linear-gradient(135deg, #00c6ff, #0072ff); }
 .button-B { background: linear-gradient(135deg, #ff416c, #ff4b2b); }
@@ -67,7 +63,6 @@ body {
     margin-bottom: 15px;
     max-height: 90px;
     overflow-y: auto;
-    padding-right: 5px;
     background-color: #555;
     border: 1px solid #777;
     border-radius: 6px;
@@ -81,7 +76,6 @@ body {
     text-align: center;
     color: #fff;
     font-weight: bold;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
 }
 .input-P { background-color: #00c6ff; }
 .input-B { background-color: #ff416c; }
@@ -103,7 +97,6 @@ body {
     line-height: 16px;
     font-weight: bold;
     transition: width 0.5s;
-    box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
 }
 
 .section-title {
@@ -120,7 +113,6 @@ body {
     border-radius: 8px;
     margin-top: 8px;
     font-size: 14px;
-    line-height: 1.4;
 }
 .stacked-bar-bg {
     width: 100%;
@@ -131,12 +123,6 @@ body {
     display: flex;
     margin-bottom: 8px;
 }
-
-@keyframes gradientMove {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
 .stacked-bar {
     height: 100%;
     text-align: center;
@@ -144,11 +130,9 @@ body {
     font-weight: bold;
     color: #fff;
     transition: width 0.5s;
-    background-size: 200% 200%;
-    animation: gradientMove 3s ease infinite;
 }
-.player-bar { background: linear-gradient(270deg, #00c6ff, #0072ff, #00c6ff); }
-.banker-bar { background: linear-gradient(270deg, #ff416c, #ff4b2b, #ff416c); }
+.player-bar { background: #0072ff; }
+.banker-bar { background: #ff4b2b; }
 
 .trend-labels {
     display: flex;
@@ -174,7 +158,6 @@ body {
 </head>
 <body>
 
-<!-- Hidden container until session check passes -->
 <div class="container" id="appContainer" style="display:none;">
 
 <div class="logo">
@@ -183,10 +166,10 @@ body {
 </div>
 
 <nav class="buttons">
-    <button class="button button-P" onclick="addInput('P')"><i class="fa-solid fa-user"></i>&nbsp; Player</button>
-    <button class="button button-B" onclick="addInput('B')"><i class="fa-solid fa-landmark"></i>&nbsp; Banker</button>
-    <button class="button button-undo" onclick="undo()"><i class="fa-solid fa-rotate-left"></i>&nbsp; UNDO</button>
-    <button class="button button-reset" onclick="resetAll()"><i class="fa-solid fa-rotate-right"></i>&nbsp; RESET</button>
+    <button class="button button-P" onclick="addInput('P')">Player</button>
+    <button class="button button-B" onclick="addInput('B')">Banker</button>
+    <button class="button button-undo" onclick="undo()">UNDO</button>
+    <button class="button button-reset" onclick="resetAll()">RESET</button>
 </nav>
 
 <div id="inputDisplay" class="input-display"></div>
@@ -197,10 +180,10 @@ body {
 
 <div id="futureContainer" style="display:none;">
     <div class="section-title">Future Trends of Gaming Tables</div>
-    <div id="futureOutput" class="future-results">
+    <div class="future-results">
         <div class="stacked-bar-bg">
-            <div id="playerTrendBar" class="stacked-bar player-bar" style="width:0%;">0%</div>
-            <div id="bankerTrendBar" class="stacked-bar banker-bar" style="width:0%;">0%</div>
+            <div id="playerTrendBar" class="stacked-bar player-bar" style="width:0%">0%</div>
+            <div id="bankerTrendBar" class="stacked-bar banker-bar" style="width:0%">0%</div>
         </div>
         <div class="trend-labels">
             <span>PLAYER</span>
@@ -213,24 +196,32 @@ body {
 </div>
 
 <script>
-// =================== SESSION CHECK ===================
-const loggedIn = localStorage.getItem('loggedIn');
-const allowedApp = localStorage.getItem('allowedApp');
-const expiresAt = Number(localStorage.getItem('expiresAt'));
-const appCode = "VIP-BACCARAT-123"; // unique app code
+// =================== SECURE SESSION CHECK ===================
+(function(){
+    const APP_KEY = "VIP-BACCARAT-123";
 
-if(loggedIn !== 'true' || allowedApp !== appCode || (expiresAt && expiresAt < Date.now())) {
-    alert("Please login first!");
-    localStorage.removeItem('loggedIn');
-    localStorage.removeItem('allowedApp');
-    localStorage.removeItem('expiresAt');
-    window.location.href = "index.html";
-} else {
-    // Show app only after session check
-    document.getElementById('appContainer').style.display = 'flex';
-}
+    const loggedIn   = localStorage.getItem("loggedIn");
+    const allowedApp = localStorage.getItem("allowedApp");
+    const expiresAt  = parseInt(localStorage.getItem("expiresAt"), 10);
+    const now = Date.now();
 
-// =================== Baccarat App Logic ===================
+    if (
+        loggedIn !== "true" ||
+        allowedApp !== APP_KEY ||
+        !expiresAt ||
+        expiresAt < now
+    ) {
+        localStorage.clear();
+        window.location.replace("index.html");
+        return;
+    }
+
+    document.addEventListener("DOMContentLoaded", function(){
+        document.getElementById("appContainer").style.display = "flex";
+    });
+})();
+
+// =================== APP LOGIC ===================
 let inputs = [];
 let trendsHistory = [];
 let historyWL = [];
@@ -242,9 +233,8 @@ function saveSnapshot() {
         inputs: [...inputs],
         trendsHistory: trendsHistory.map(t => ({...t})),
         historyWL: [...historyWL],
-        lastPrediction: lastPrediction
+        lastPrediction
     });
-    if(appHistory.length > 100) appHistory.shift();
 }
 
 function renderDisplay() {
@@ -256,7 +246,6 @@ function renderDisplay() {
         div.textContent = c;
         display.appendChild(div);
     });
-    updateProgress();
     updateFutureTrends();
     updateHistory();
 }
@@ -264,39 +253,29 @@ function renderDisplay() {
 function addInput(v) {
     if(lastPrediction !== null) {
         historyWL.push(lastPrediction === v ? "W" : "L");
-        if(historyWL.length > 10) historyWL.shift();
         lastPrediction = null;
     }
 
     inputs.push(v);
 
-    if(inputs.length >= 1){
-        let playerPercent = Math.floor(Math.random() * 61) + 20;
-        let bankerPercent = 100 - playerPercent;
-        trendsHistory.push({player: playerPercent, banker: bankerPercent});
-        if(trendsHistory.length > 10) trendsHistory.shift();
-        lastPrediction = (playerPercent !== bankerPercent) ? (playerPercent > bankerPercent ? "P" : "B") : null;
-    }
+    let playerPercent = Math.floor(Math.random() * 61) + 20;
+    let bankerPercent = 100 - playerPercent;
+
+    trendsHistory.push({player: playerPercent, banker: bankerPercent});
+    lastPrediction = playerPercent > bankerPercent ? "P" : "B";
 
     saveSnapshot();
     renderDisplay();
 }
 
 function undo() {
-    if(appHistory.length === 0) return;
+    if(appHistory.length < 2) return;
     appHistory.pop();
-    if(appHistory.length === 0) {
-        inputs = [];
-        trendsHistory = [];
-        historyWL = [];
-        lastPrediction = null;
-    } else {
-        const snapshot = appHistory[appHistory.length - 1];
-        inputs = [...snapshot.inputs];
-        trendsHistory = snapshot.trendsHistory.map(t => ({...t}));
-        historyWL = [...snapshot.historyWL];
-        lastPrediction = snapshot.lastPrediction;
-    }
+    const snapshot = appHistory[appHistory.length - 1];
+    inputs = [...snapshot.inputs];
+    trendsHistory = snapshot.trendsHistory.map(t => ({...t}));
+    historyWL = [...snapshot.historyWL];
+    lastPrediction = snapshot.lastPrediction;
     renderDisplay();
 }
 
@@ -309,38 +288,23 @@ function resetAll() {
     renderDisplay();
 }
 
-function updateProgress() {
-    const pb = document.getElementById("progressBar");
-    const container = document.getElementById("progressContainer");
-    container.style.display = inputs.length >= 1 ? "none" : "block";
-    const percent = Math.min((inputs.length / 1) * 100, 100);
-    pb.style.width = percent + "%";
-    pb.innerText = Math.round(percent) + "%";
-}
-
 function updateFutureTrends() {
-    const futureContainer = document.getElementById("futureContainer");
-    const playerBar = document.getElementById("playerTrendBar");
-    const bankerBar = document.getElementById("bankerTrendBar");
-    if(inputs.length < 1){
-        futureContainer.style.display = "none";
-        return;
-    }
-    futureContainer.style.display = "block";
+    if(trendsHistory.length === 0) return;
     const trend = trendsHistory[trendsHistory.length-1];
-    playerBar.style.width = trend.player + "%";
-    playerBar.innerText = trend.player + "%";
-    bankerBar.style.width = trend.banker + "%";
-    bankerBar.innerText = trend.banker + "%";
+    document.getElementById("futureContainer").style.display = "block";
+    document.getElementById("playerTrendBar").style.width = trend.player + "%";
+    document.getElementById("playerTrendBar").innerText = trend.player + "%";
+    document.getElementById("bankerTrendBar").style.width = trend.banker + "%";
+    document.getElementById("bankerTrendBar").innerText = trend.banker + "%";
 }
 
 function updateHistory() {
     const box = document.getElementById("historyBox");
     box.innerHTML = "";
-    historyWL.forEach(result => {
+    historyWL.slice(-10).forEach(r => {
         const span = document.createElement("span");
-        span.textContent = result + " ";
-        span.classList.add(result === "W" ? "history-win" : "history-lose");
+        span.textContent = r + " ";
+        span.classList.add(r === "W" ? "history-win" : "history-lose");
         box.appendChild(span);
     });
 }
