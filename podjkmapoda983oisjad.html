@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Baccarat PRO</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* ... (your existing styles remain unchanged) ... */
+</style>
+</head>
+<body>
+
+<!-- Setup overlay and card remain unchanged -->
+<div id="setup-overlay">
+  <div>
+    <h2>Set Bankroll & Base Bet</h2>
+    <label>Bankroll: $<input type="number" id="input-bankroll" value="1000"></label><br><br>
+    <label>Next Bet: $<input type="number" id="input-bet" value="100"></label><br><br>
+    <button id="start-btn">Start</button>
+  </div>
+</div>
+
+<div class="card" id="appContainer" style="display:none;">
+  <!-- ... all your app HTML content ... -->
+</div>
+
+<script>
+// ===== SESSION CHECK =====
+const loggedIn = localStorage.getItem('loggedIn');
+const allowedApp = localStorage.getItem('allowedApp');
+const expiresAt = Number(localStorage.getItem('expiresAt'));
+const appKey = "podjkmapoda983oisjad"; // ✅ your app key
+
+if(loggedIn !== 'true' || allowedApp !== appKey || (expiresAt && expiresAt < Date.now())){
+    alert("Please login first!");
+    localStorage.removeItem('loggedIn');
+    localStorage.removeItem('allowedApp');
+    localStorage.removeItem('expiresAt');
+    window.location.href = "index.html"; // redirect to login page
+} else {
+    document.getElementById('appContainer').style.display = 'block';
+}
+
+// ===== Baccarat PRO Logic =====
+let bankroll=1000, baseBet=100, currentBet=100;
+let cumulativeLoss=0, winCount=0, lossStreak=0;
+let maxLoss=6, targetProfitMultiplier=1.8;
+let targetProfit=0, history=[], aiPrediction=null;
+
+const bankrollEl=document.getElementById("bankroll");
+const nextBetEl=document.getElementById("next-bet");
+const historyEl=document.getElementById("history");
+const predictionBox=document.getElementById("prediction-box");
+const predictionLabel=document.getElementById("prediction");
+const bar=document.getElementById("bar");
+const val=document.getElementById("val");
+const waitmsg=document.getElementById("waitmsg");
+const bankrollMsg=document.getElementById("bankroll-msg");
+
+const btnPlayer=document.querySelector(".btn-player");
+const btnBanker=document.querySelector(".btn-banker");
+const btnTie=document.querySelector(".btn-tie");
+const betButtons=[btnPlayer,btnBanker,btnTie];
+
+const overlay=document.getElementById("setup-overlay");
+const inputBankroll=document.getElementById("input-bankroll");
+const inputBet=document.getElementById("input-bet");
+const startBtn=document.getElementById("start-btn");
+
+window.onload=()=>overlay.style.display="flex";
+
+startBtn.onclick=()=>{
+  bankroll=parseInt(inputBankroll.value)||1000;
+  baseBet=currentBet=parseInt(inputBet.value)||100;
+  targetProfit=bankroll*targetProfitMultiplier;
+  resetState();
+  overlay.style.display="none";
+};
+
+function resetState(){
+  cumulativeLoss=0;winCount=0;lossStreak=0;
+  history=[];aiPrediction=null;
+  historyEl.innerHTML="";
+  predictionBox.classList.add("hidden");
+  waitmsg.classList.remove("hidden");
+  bankrollMsg.textContent="";
+  betButtons.forEach(b=>b.disabled=false);
+  updateBankroll();updateNextBet();
+}
+
+function updateBankroll(){ bankrollEl.innerHTML=`<span class="label">Bankroll:</span> $${bankroll}`; }
+function updateNextBet(){ nextBetEl.textContent=`Next Bet: $${currentBet}`; }
+
+function addHistory(result,outcome="neutral"){
+  history.push({result,outcome});
+  if(history.length>10) history.shift();
+  historyEl.innerHTML=history.map(h=>{
+    if(h.result==="Tie")return `<span class="t">T</span>`;
+    if(h.outcome==="win")return `<span class="w">${h.result[0]}</span>`;
+    if(h.outcome==="loss")return `<span class="l">${h.result[0]}</span>`;
+    return `<span class="dash">${h.result[0]}</span>`;
+  }).join(" ");
+}
+
+function animateConfidence(num){
+  let c=0,inc=num/20;
+  (function run(){ c+=inc;if(c>num)c=num; bar.style.width=c+"%"; val.textContent=c.toFixed(1)+"%"; if(c<num)requestAnimationFrame(run); })();
+}
+
+function makePrediction(){
+  let p=0,b=0,decay=.95;
+  history.forEach((h,i)=>{ let f=Math.pow(decay,history.length-i-1); if(h.result==="Player")p+=f; if(h.result==="Banker")b+=f; });
+  if(!p&&!b)return;
+  aiPrediction=Math.random()<p/(p+b)?"Player":"Banker";
+  predictionLabel.textContent=aiPrediction;
+  predictionLabel.className="pred-label "+aiPrediction.toLowerCase();
+  predictionBox.classList.remove("hidden");
+  waitmsg.classList.add("hidden");
+  animateConfidence((aiPrediction==="Player"?p:b)/(p+b)*100);
+}
+
+function calculateNextBet(){
+  if(lossStreak>0){ let aggressive=(cumulativeLoss+baseBet)*1.5; return Math.min(Math.ceil(aggressive),bankroll); }
+  return baseBet;
+}
+
+function resetGame(){
+  overlay.style.display="flex";
+  bankroll=parseInt(inputBankroll.value)||1000;
+  baseBet=currentBet=parseInt(inputBet.value)||100;
+  targetProfit=bankroll*targetProfitMultiplier;
+  resetState();
+}
+
+function handleClick(result){
+  if(history.length<6){ addHistory(result); if(history.length===6)makePrediction(); return; }
+  if(result==="Tie"){ addHistory(result); return; }
+
+  if(result===aiPrediction){ bankroll+=currentBet; cumulativeLoss=0; lossStreak=0; winCount++; addHistory(result,"win");
+    if(bankroll>=targetProfit){ bankrollMsg.textContent="🎉 Congratulations! You won and made profit! Click Reset to start again."; betButtons.forEach(b=>b.disabled=true); return; }
+  }else{ bankroll-=currentBet; cumulativeLoss+=currentBet; lossStreak++; addHistory(result,"loss");
+    if(lossStreak>=maxLoss||bankroll<=0){ bankrollMsg.textContent="😢 Max loss streak reached. Reset your game to try again."; betButtons.forEach(b=>b.disabled=true); currentBet=0; updateNextBet(); return; }
+  }
+  currentBet=calculateNextBet(); updateBankroll(); updateNextBet(); makePrediction();
+}
+
+btnPlayer.onclick=()=>handleClick("Player");
+btnBanker.onclick=()=>handleClick("Banker");
+btnTie.onclick=()=>handleClick("Tie");
+document.querySelector(".btn-reset").onclick=resetGame;
+</script>
+</body>
+</html>
