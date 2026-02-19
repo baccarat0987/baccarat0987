@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Baccarat Analysis Ultra</title>
+<link rel="icon" href="icon.ico">
+<style>
+:root{
+  --bg1:#0c0c0c; --bg2:#1a1a1a; --bg3:#2a2a2a; --panel:rgba(32,32,32,0.85);
+  --border:#444; --text:#e8e8e8; --muted:#aaa; --gold:#f7d14b;
+  --player:#00d4ff; --player-dark:#00aaff; --banker:#ff6aa6; --banker-dark:#ff2d5a;
+  --reset:#ffc857; --reset-dark:#f39c12;
+}
+*{box-sizing:border-box;}
+body{margin:0;font-family:Inter,sans-serif;background:linear-gradient(135deg,var(--bg1),var(--bg2),var(--bg3));color:var(--text);font-size:14px;}
+.title{text-align:center;padding:26px 0 18px;}
+.title h1{font-size:34px;letter-spacing:3px;background:linear-gradient(90deg,var(--player),var(--banker));-webkit-background-clip:text;color:transparent;text-shadow:0 0 10px rgba(0,212,255,0.55),0 0 30px rgba(255,106,166,0.35);}
+.slogan{font-style:italic;color:var(--muted);margin-top:6px;}
+#container{width:600px;margin:0 auto;background:var(--panel);padding:24px;border-radius:16px;border:1px solid var(--border);box-shadow:0 20px 40px rgba(0,0,0,0.6),0 0 48px rgba(124,77,255,0.12);backdrop-filter:blur(10px);display:none;}
+.char-count{text-align:center;margin-bottom:10px;color:var(--gold);font-weight:bold;}
+#display{background:var(--panel);border:1px solid var(--border);border-radius:10px;margin:10px 0 14px;padding:12px;text-align:center;font-size:18px;letter-spacing:3px;}
+.input-row{display:flex;justify-content:center;gap:12px;margin-bottom:12px;}
+button{border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px 22px;font-size:20px;font-weight:700;cursor:pointer;color:#fff;transition:transform .12s ease,box-shadow .2s ease,opacity .2s ease;}
+button:hover{transform:translateY(-1px) scale(1.05);}
+button:disabled{opacity:.55;cursor:not-allowed;}
+button[value=P]{background:linear-gradient(135deg,var(--player),var(--player-dark));}
+button[value=B]{background:linear-gradient(135deg,var(--banker),var(--banker-dark));}
+.btn-back{background:transparent;border:1px dashed rgba(255,255,255,0.25);font-size:20px;color:var(--gold);padding:8px 0;width:48px;}
+.btn-back:disabled{color:#666;border-color:#333;}
+.btn-reset{background:linear-gradient(135deg,var(--reset),var(--reset-dark));}
+.bet-box{background:var(--panel);color:#fff;border:1px solid var(--border);border-radius:16px;padding:16px;text-align:center;width:560px;margin:0 auto 12px;box-shadow:0 6px 22px rgba(0,0,0,0.35);}
+.player-pred{background:linear-gradient(135deg,var(--player),var(--player-dark));}
+.banker-pred{background:linear-gradient(135deg,var(--banker),var(--banker-dark));}
+.results.glass{width:100%;max-width:600px;margin:16px auto;padding:12px;border-radius:14px;box-shadow:0 6px 22px rgba(0,0,0,0.35);}
+.history-table{width:100%;border-collapse:collapse;table-layout:fixed;}
+.history-table colgroup col.col-round{width:90px;}
+.history-table colgroup col.col-win{width:150px;}
+.history-table th, .history-table td{border:1px solid var(--border);padding:10px;text-align:center;font-size:13px;}
+.history-table th{background:#1c1c1c;text-transform:uppercase;font-weight:800;color:#cfe3ff;letter-spacing:.5px;}
+.history-table td.number{font-weight:800;color:#e8e8e8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.history-table td.strategy{font-family:"Courier New",monospace;font-size:12px;color:var(--text);overflow-x:auto;white-space:nowrap;display:block;}
+.badge{display:inline-block;padding:4px 8px;border-radius:999px;font-weight:800;font-size:12px;background:rgba(0,229,255,0.12);color:#fff;}
+</style>
+</head>
+<body>
+
+<div class="title">
+<h1>Baccarat Analysis Ultra</h1>
+<div class="slogan">💡 This tool is not a Hack, but it's an analysis tool, so losing rounds can still happen!</div>
+</div>
+
+<div id="container">
+  <div class="char-count" id="charCount">Entered <span id="entered-count">0</span> / 30</div>
+  <div id="display"></div>
+
+  <div class="input-row">
+    <button id="btnP" value="P">P</button>
+    <button id="btnB" value="B">B</button>
+    <button id="btnBack" class="btn-back" disabled>⌫</button>
+    <button id="btnReset" class="btn-reset">Reset</button>
+  </div>
+
+  <div id="predictionBox" class="bet-box glass bet-inactive" style="display:none;">
+    <div class="prediction-details"><span id="predictionText"></span></div>
+  </div>
+
+  <div class="results glass" id="historyContainer" style="display:none;">
+    <table class="history-table">
+      <colgroup>
+        <col class="col-round" />
+        <col />
+        <col class="col-win" />
+      </colgroup>
+      <thead>
+        <tr><th>Round</th><th>Strategy</th><th>WIN</th></tr>
+      </thead>
+      <tbody id="historyBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+// ================= SESSION CHECK =================
+const loggedIn = localStorage.getItem('loggedIn');
+const allowedApp = localStorage.getItem('allowedApp');
+const expiresAt = Number(localStorage.getItem('expiresAt'));
+const appKey = "iausgdhiuashdi2s8f7ji"; // ✅ your app key
+
+if(loggedIn !== 'true' || allowedApp !== appKey || (expiresAt && expiresAt < Date.now())){
+    alert("Please login first!");
+    localStorage.removeItem('loggedIn');
+    localStorage.removeItem('allowedApp');
+    localStorage.removeItem('expiresAt');
+    window.location.href = "index.html";
+} else {
+    document.getElementById('container').style.display = 'block';
+}
+
+// ================= Baccarat App Logic =================
+const display = document.getElementById('display');
+const enteredCount = document.getElementById('entered-count');
+const charCountDiv = document.getElementById('charCount');
+const btnP = document.getElementById('btnP');
+const btnB = document.getElementById('btnB');
+const btnBack = document.getElementById('btnBack');
+const btnReset = document.getElementById('btnReset');
+const predictionBox = document.getElementById('predictionBox');
+const predictionText = document.getElementById('predictionText');
+const historyContainer = document.getElementById('historyContainer');
+const historyBody = document.getElementById('historyBody');
+
+let results = [];
+let historyData = [];
+let firstPredictionShown = false;
+let snapshots = [];
+const MAX_ENTRIES = 30;
+
+function randomPrediction(){ return Math.random()<0.5?"P":"B"; }
+function randomStrategy(){ let s="";for(let i=0;i<30;i++) s+=Math.random()<0.5?"P":"B"; return s; }
+
+function updateDisplay(){ 
+  display.textContent = results.join(''); 
+  enteredCount.textContent = results.length; 
+  btnBack.disabled = results.length===0; 
+  charCountDiv.style.display = results.length>=MAX_ENTRIES?'none':'block';
+}
+
+function showPrediction(){
+  const pred = randomPrediction();
+  predictionText.textContent = pred==="P"?"PLAYER":"BANKER";
+  predictionBox.style.display='block';
+  predictionBox.className='bet-box glass bet-active '+(pred==="P"?"player-pred":"banker-pred");
+}
+
+function updateHistory(){
+  if(historyData.length===0){ historyContainer.style.display='none'; return; }
+  historyContainer.style.display='block';
+  historyBody.innerHTML="";
+  const visibleHistory = historyData.slice(-3);
+  visibleHistory.forEach(item=>{
+    const row=document.createElement('tr');
+    const r=document.createElement('td'); r.className='number'; r.textContent=item.round;
+    const s=document.createElement('td'); s.className='strategy'; s.textContent=item.strategy;
+    const w=document.createElement('td'); w.className='wins';
+    const b=document.createElement('span'); b.className='badge'; b.textContent=item.prediction===item.result?"✔":"X";
+    w.appendChild(b);
+    row.appendChild(r); row.appendChild(s); row.appendChild(w);
+    historyBody.appendChild(row);
+  });
+}
+
+function saveSnapshot(){ snapshots.push({results:[...results],historyData:[...historyData],firstPredictionShown, predictionText:predictionText.textContent}); }
+function restoreSnapshot(){ 
+  if(snapshots.length===0) return; 
+  const snap=snapshots.pop(); 
+  results=snap.results; 
+  historyData=snap.historyData; 
+  firstPredictionShown=snap.firstPredictionShown; 
+  predictionText.textContent=snap.predictionText;
+  predictionBox.style.display=firstPredictionShown?'block':'none';
+  if(firstPredictionShown){ 
+    predictionBox.className='bet-box glass bet-active '+(predictionText.textContent==='PLAYER'?'player-pred':'banker-pred'); 
+  }
+  updateDisplay();
+  updateHistory();
+}
+
+function addResult(val){
+  saveSnapshot();
+  if(results.length>=MAX_ENTRIES) results.shift();
+  results.push(val);
+  updateDisplay();
+
+  if(results.length>=MAX_ENTRIES && !firstPredictionShown){
+    firstPredictionShown=true;
+    showPrediction();
+    return;
+  }
+
+  if(firstPredictionShown){
+    const lastPred = predictionText.textContent==='PLAYER'?'P':'B';
+    const strat = randomStrategy();
+    const roundNum = historyData.length+1;
+    historyData.push({round:roundNum,strategy:strat,prediction:lastPred,result:val});
+    if(historyData.length>MAX_ENTRIES) historyData.shift();
+    updateHistory();
+    const nextPred = randomPrediction();
+    predictionText.textContent=nextPred==='P'?'PLAYER':'BANKER';
+    predictionBox.className='bet-box glass bet-active '+(nextPred==='P'?'player-pred':'banker-pred');
+  }
+}
+
+btnP.addEventListener('click',()=>addResult('P'));
+btnB.addEventListener('click',()=>addResult('B'));
+btnBack.addEventListener('click',restoreSnapshot);
+btnReset.addEventListener('click',()=>{
+  results=[]; historyData=[]; firstPredictionShown=false; snapshots=[];
+  predictionBox.style.display='none'; updateDisplay(); updateHistory();
+});
+</script>
+</body>
+</html>
