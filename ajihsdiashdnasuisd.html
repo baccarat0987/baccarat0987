@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Baccarat PREDICTOR</title>
+<link rel="icon" href="icon.ico" type="image/x-icon">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  body {
+    margin:0; padding:0; font-family:'Roboto',sans-serif; color:#eee; font-size:17px;
+    background: linear-gradient(-45deg, #2b0040, #4b0082, #8a2be2, #6a0dad);
+    background-size: 400% 400%;
+    animation: galaxy 20s ease infinite;
+  }
+  @keyframes galaxy {0% {background-position: 0% 50%;} 50% {background-position: 100% 50%;} 100% {background-position: 0% 50%;}}
+
+  .header {text-align:center; padding:20px 0; background:rgba(0,0,0,0.5); border-bottom:1px solid #333;}
+  .header h1 {font-family:'Orbitron',sans-serif; font-size:40px; color:#fff; margin:0; font-weight:bold; letter-spacing:2px; text-shadow:0 0 15px #bb86fc,0 0 30px #bb86fc,0 0 45px #bb86fc;}
+
+  .container {max-width:900px; margin:30px auto; padding:20px; background:rgba(20,20,30,0.85); border:1px solid #333; border-radius:12px; text-align:center; box-shadow:0 0 25px rgba(0,0,0,0.7); display:none;}
+
+  .sequence {margin:12px 0; font-size:20px;}
+  .sequence span {display:inline-block; width:28px; height:28px; line-height:28px; text-align:center; border-radius:4px; margin:3px; font-weight:bold;}
+  .p { background:#2196f3; color:#fff;} .b { background:#f44336; color:#fff;} .t { background:#ffc107; color:#000;}
+
+  .prediction {margin:18px 0; font-size:26px; font-weight:700; text-shadow:0 0 2px #000;}
+  .prediction .p {color:#2196f3; background:none;}
+  .prediction .b {color:#f44336; background:none;}
+
+  .buttons {margin:16px 0;}
+  .buttons button {background:#2a2a2a; color:#eee; border:1px solid #333; border-radius:6px; padding:10px 16px; margin:6px; font-size:15px; font-family:'Orbitron',sans-serif; font-weight:700; cursor:pointer; transition:all 0.18s;}
+  .buttons button:hover {background:#444;}
+
+  .capital-table {margin-top:14px;}
+  .capital-table table {width:100%; border-collapse:collapse; text-align:center; border:1px solid #333; background:#2a2a2a; box-shadow:0 0 8px rgba(0,0,0,0.4);}
+  .capital-table th, .capital-table td {padding:10px; font-size:16px; color:#eee; border-bottom:1px solid #333;}
+  .capital-table th {background:#1f1f1f; font-weight:700;}
+
+  .highlight {background:#ffc107 !important; color:#000 !important; font-weight:700; border-radius:4px;}
+  .highlight-win {background:#00f693 !important; color:#000 !important; font-weight:700; border-radius:4px;}
+
+  .message-box {margin-top:14px; font-size:20px; font-weight:700;}
+  .message-box.success {color:#00f693;}
+  .message-box.fail {color:#f44336;}
+</style>
+</head>
+<body>
+<div class="header"><h1>Baccarat PREDICTOR</h1></div>
+<div class="container" id="appContainer">
+  <div class="sequence" id="historyBox"></div>
+  <div id="predictionBox" class="prediction"></div>
+  <div class="buttons">
+    <button onclick="recordResult('P')">PLAYER</button>
+    <button onclick="recordResult('B')">BANKER</button>
+    <button onclick="recordResult('T')">TIE</button>
+    <button onclick="undo()">UNDO</button>
+    <button onclick="resetAll()">RESET</button>
+  </div>
+  <div class="capital-table" id="betTableBox">
+    <table id="betTable">
+      <thead>
+        <tr>
+          <th>Bet 1</th><th>Bet 2</th><th>Bet 3</th><th>Bet 4</th><th>Bet 5</th><th>Bet 6</th><th>Bet 7</th><th>WIN</th>
+        </tr>
+      </thead>
+      <tbody id="betBody"></tbody>
+    </table>
+  </div>
+  <div id="finalMessage" class="message-box"></div>
+</div>
+
+<script>
+// ====== SESSION CHECK ======
+const loggedIn = localStorage.getItem('loggedIn');
+const allowedApp = localStorage.getItem('allowedApp');
+const expiresAt = Number(localStorage.getItem('expiresAt'));
+const appKey = "ajihsdiashdnasuisd"; // ✅ your app key
+
+if(loggedIn !== 'true' || allowedApp !== appKey || (expiresAt && expiresAt < Date.now())){
+    alert("Please login first!");
+    localStorage.removeItem('loggedIn');
+    localStorage.removeItem('allowedApp');
+    localStorage.removeItem('expiresAt');
+    window.location.href = "index.html";
+} else {
+    document.getElementById('appContainer').style.display = 'block';
+}
+
+// ====== Baccarat PREDICTOR Logic ======
+let sequence = [];
+let currentPrediction = null;
+let currentRow = 0;
+let currentCol = 0;
+const maxCols = 7;
+const maxRows = 10;
+const betValues = ["1","2","6","14","30","62","ALL IN"];
+
+function initBetTable() {
+  const tbody = document.getElementById('betBody');
+  tbody.innerHTML = '';
+  for (let r=0; r<maxRows; r++) {
+    const tr = document.createElement('tr');
+    for (let c=0; c<maxCols; c++) {
+      const td = document.createElement('td'); td.textContent = betValues[c]; tr.appendChild(td);
+    }
+    const winTd = document.createElement('td'); winTd.textContent = ''; tr.appendChild(winTd);
+    tbody.appendChild(tr);
+  }
+}
+function updateHistory() {
+  const box = document.getElementById('historyBox'); box.innerHTML='';
+  sequence.forEach(r => { const span=document.createElement('span'); span.className=r.toLowerCase(); span.textContent=r; box.appendChild(span); });
+}
+function updatePrediction() {
+  const box = document.getElementById('predictionBox');
+  if(sequence.length<7){ currentPrediction=null; box.innerHTML=""; updateBetTable(); return; }
+  const windowSizes=[5,4,3]; let found=false; let nextChoices=[];
+  for(let w of windowSizes){
+    if(sequence.length>=w){
+      const lastForm=sequence.slice(-w).join("-");
+      for(let i=0;i<=sequence.length-w-1;i++){
+        if(sequence.slice(i,i+w).join("-")===lastForm){ const nextVal=sequence[i+w]; if(nextVal&&nextVal!=='T') nextChoices.push(nextVal); }
+      }
+      if(nextChoices.length>0){ found=true; break; }
+    }
+  }
+  if(!found){ currentPrediction='B'; } else { let counts={P:0,B:0}; nextChoices.forEach(x=>{if(x==='P'||x==='B') counts[x]++;}); currentPrediction=counts.P>=counts.B?'P':'B'; }
+  box.innerHTML=currentPrediction==='P'? "<span class='p'>PLAYER</span>" : "<span class='b'>BANKER</span>";
+  updateBetTable();
+}
+function updateBetTable() {
+  const rows=document.getElementById('betBody').rows;
+  for(let r=0;r<maxRows;r++){ for(let c=0;c<maxCols;c++) rows[r].cells[c].classList.remove('highlight'); rows[r].cells[maxCols].classList.remove('highlight-win'); }
+  if(currentPrediction&&sequence.length>=7) rows[currentRow].cells[currentCol].classList.add('highlight');
+}
+function markWin(rowIndex){ const rows=document.getElementById('betBody').rows; if(rows[rowIndex]) rows[rowIndex].cells[maxCols].innerHTML="✔"; }
+function recordResult(res){
+  const prevPrediction=currentPrediction;
+  if(prevPrediction&&(res==='P'||res==='B')){
+    if(res===prevPrediction){ markWin(currentRow); currentRow++; currentCol=0; if(currentRow>=maxRows){ document.getElementById('betTableBox').style.display="none"; document.getElementById('finalMessage').textContent="🎉 CONGRATS! You have a profit! Please click RESET to restart the game."; document.getElementById('finalMessage').className="message-box success"; return; } }
+    else{ currentCol++; if(currentCol>=maxCols){ document.getElementById('betTableBox').style.display="none"; document.getElementById('finalMessage').textContent="❌ TRY AGAIN! Please click RESET to restart the game."; document.getElementById('finalMessage').className="message-box fail"; return; } }
+  }
+  sequence.push(res); updateHistory(); updatePrediction(); updateBetTable();
+}
+function undo() {
+  if(sequence.length===0) return; sequence.pop(); document.getElementById('betTableBox').style.display="block"; document.getElementById('finalMessage').textContent=""; document.getElementById('finalMessage').className="message-box"; currentRow=0; currentCol=0; currentPrediction=null;
+  const tempSeq=[...sequence]; sequence=[]; initBetTable(); tempSeq.forEach(r=>{ sequence.push(r); const prevPrediction=currentPrediction; if(prevPrediction&&(r==='P'||r==='B')){ if(r===prevPrediction){ markWin(currentRow); currentRow++; currentCol=0; if(currentRow>=maxRows) return; } else{ currentCol++; if(currentCol>=maxCols) return; } } updateHistory(); updatePrediction(); updateBetTable(); });
+  updateHistory(); updatePrediction(); updateBetTable();
+}
+function resetAll(){ sequence=[]; currentPrediction=null; currentRow=0; currentCol=0; initBetTable(); document.getElementById('betTableBox').style.display="block"; document.getElementById('finalMessage').textContent=""; document.getElementById('finalMessage').className="message-box"; updateHistory(); updatePrediction(); updateBetTable(); }
+initBetTable(); updateHistory(); updatePrediction(); updateBetTable();
+</script>
+</body>
+</html>
