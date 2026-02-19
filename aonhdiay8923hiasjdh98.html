@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, maximum-scale=1.0">
+<title>Gemini ULTRA VIP</title>
+
+<style>
+/* ----------------------------------------------------
+   GLOBAL VIP THEME — CYAN (PLAYER) & PINK/RED (BANKER)
+---------------------------------------------------- */
+
+body {
+  margin: 0;
+  background: #0a0a0f;
+  font-family: Arial, sans-serif;
+  color: #fff;
+  overflow-x: hidden;
+}
+
+.title-container {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.title-container h1 {
+  font-size: 32px;
+  font-weight: 900;
+  background: linear-gradient(90deg, #00e5ff, #ff2d55);
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+/* ----------------------------------------------------
+   MAIN PREDICTION PANEL
+---------------------------------------------------- */
+
+.app-container {
+  width: 95%;
+  max-width: 480px;
+  margin: 0 auto;
+  padding-top: 20px;
+}
+
+#prediction {
+  width: 100%;
+  padding: 18px;
+  text-align: center;
+  font-size: 26px;
+  font-weight: bold;
+  border-radius: 16px;
+  margin-bottom: 8px;
+  transition: 0.3s ease;
+}
+
+.pred-placeholder {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #ccc;
+}
+
+/* PLAYER = CYAN */
+.pred-PLAYER {
+  background: linear-gradient(270deg, #0088cc, #00e5ff, #4deaff, #0088cc);
+  background-size: 600% 600%;
+  animation: gradientMove 8s ease infinite;
+  box-shadow: 0 0 12px rgba(0,229,255,0.6);
+}
+
+/* BANKER = PINK/RED */
+.pred-BANKER {
+  background: linear-gradient(270deg, #c4004f, #ff2d55, #ff6b9e, #c4004f);
+  background-size: 600% 600%;
+  animation: gradientMove 8s ease infinite;
+  box-shadow: 0 0 12px rgba(255,45,85,0.6);
+}
+
+@keyframes gradientMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ----------------------------------------------------
+   EXTRA PREDICTION INFO
+---------------------------------------------------- */
+
+#extraInfo {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.extra-line {
+  font-size: 15px;
+  margin: 3px 0;
+}
+
+.pattern-id {
+  color: gold;
+}
+
+.confidence-value {
+  font-weight: bold;
+}
+
+/* ----------------------------------------------------
+   HISTORY
+---------------------------------------------------- */
+
+#history {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+
+.history-chip {
+  padding: 8px 12px;
+  border-radius: 10px;
+  color: #fff;
+  font-weight: bold;
+}
+
+.history-P { background: #00cfff; }
+.history-B { background: #ff3d6e; }
+
+/* ----------------------------------------------------
+   BUTTONS
+---------------------------------------------------- */
+
+.btn-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+button {
+  padding: 14px;
+  border: none;
+  font-size: 18px;
+  border-radius: 14px;
+  color: #fff;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.2s ease;
+}
+
+/* PLAYER BUTTON */
+#btnPlayer {
+  background: linear-gradient(90deg, #00bfff, #00e5ff);
+}
+#btnPlayer:hover { transform: scale(1.04); }
+
+/* BANKER BUTTON */
+#btnBanker {
+  background: linear-gradient(90deg, #ff2d55, #ff6b9e);
+}
+#btnBanker:hover { transform: scale(1.04); }
+
+#btnUndo { background: #555; }
+#btnReset { background: #333; }
+
+/* ----------------------------------------------------
+   PATTERN BLOCK
+---------------------------------------------------- */
+
+.pattern-block {
+  display: none;
+  padding: 16px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.15);
+}
+
+.pattern-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.row-label {
+  width: 40px;
+  text-align: center;
+  color: #aaa;
+}
+
+.row-cells {
+  display: flex;
+  gap: 6px;
+}
+
+.col {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  font-size: 13px;
+}
+
+.P { background: #00cfff; }
+.B { background: #ff3d6e; }
+
+.highlight {
+  border: 2px solid gold;
+}
+
+/* ----------------------------------------------------
+   LOADING OVERLAY
+---------------------------------------------------- */
+
+#loadingOverlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  backdrop-filter: blur(8px);
+  background: rgba(0,0,0,0.5);
+  display: none;
+  justify-content: center;
+  align-items: center;
+}
+
+.loader {
+  width: 60px;
+  height: 60px;
+  border: 6px solid rgba(255,255,255,0.3);
+  border-top-color: #00e5ff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+</style>
+</head>
+
+<body>
+
+<!-- =========================
+   SESSION CHECK SCRIPT
+========================== -->
+<script>
+// ✅ SESSION CHECK
+const loggedIn = localStorage.getItem('loggedIn');
+const allowedApp = localStorage.getItem('allowedApp');
+const expiresAt = Number(localStorage.getItem('expiresAt'));
+
+if (loggedIn !== 'true' || allowedApp !== 'aonhdiay8923hiasjdh98' || (expiresAt && expiresAt < Date.now())) {
+    alert("Please login first!");
+    localStorage.removeItem('loggedIn');
+    localStorage.removeItem('allowedApp');
+    localStorage.removeItem('expiresAt');
+    window.location.href = "index.html"; // redirect to login
+}
+</script>
+
+<div class="title-container">
+  <h1>Gemini ULTRA VIP</h1>
+</div>
+
+<div class="app-container">
+
+  <div id="prediction" class="pred-placeholder">
+    Waiting for 10 entries...
+  </div>
+
+  <!-- EXTRA INFO -->
+  <div id="extraInfo">
+    <div class="extra-line">Pattern ID: <span class="pattern-id" id="patternId">-</span></div>
+    <div class="extra-line">Confidence: <span class="confidence-value" id="confidenceValue">-</span></div>
+  </div>
+
+  <div id="history"></div>
+
+  <div class="btn-container">
+    <button id="btnPlayer">Player</button>
+    <button id="btnBanker">Banker</button>
+    <button id="btnUndo">Undo</button>
+    <button id="btnReset">Reset</button>
+  </div>
+
+  <div id="patternBlock" class="pattern-block"></div>
+
+  <div id="loadingOverlay"><div class="loader"></div></div>
+
+</div>
+
+<script>
+/* -----------------------------
+   VARIABLES
+------------------------------ */
+
+let history = [];
+let predHistory = [];
+const MAX_HISTORY = 10;
+
+/* -----------------------------
+   HISTORY UPDATE
+------------------------------ */
+
+function updateHistory() {
+  const hist = document.getElementById("history");
+  hist.innerHTML = "";
+  history.slice(-MAX_HISTORY).forEach(item => {
+    const chip = document.createElement("div");
+    chip.className = `history-chip history-${item}`;
+    chip.textContent = item;
+    hist.appendChild(chip);
+  });
+}
+
+/* -----------------------------
+   LOADING
+------------------------------ */
+
+function showLoading() {
+  const overlay = document.getElementById("loadingOverlay");
+  overlay.style.display = "flex";
+  setTimeout(() => overlay.style.display = "none", 700);
+}
+
+/* -----------------------------
+   PREDICTION UPDATE
+------------------------------ */
+
+function updatePrediction() {
+  const predEl = document.getElementById("prediction");
+  const patternBlock = document.getElementById("patternBlock");
+
+  predEl.classList.remove("pred-PLAYER", "pred-BANKER");
+
+  if (history.length >= MAX_HISTORY) {
+    showLoading();
+
+    setTimeout(() => {
+      const pred = predHistory[predHistory.length - 1];
+
+      predEl.textContent = pred;
+      predEl.classList.add(pred === "PLAYER" ? "pred-PLAYER" : "pred-BANKER");
+
+      generatePatterns(pred);
+
+      patternBlock.style.display = "block";
+
+      // Pattern ID + Confidence
+      document.getElementById("patternId").textContent = "#" + (1000 + Math.floor(Math.random() * 9000));
+      document.getElementById("confidenceValue").textContent = Math.floor(55 + Math.random() * 40) + "%";
+
+    }, 350);
+
+  } else {
+    predEl.textContent = `Need ${MAX_HISTORY - history.length} more entries...`;
+    predEl.className = "pred-placeholder";
+    patternBlock.style.display = "none";
+
+    document.getElementById("patternId").textContent = "-";
+    document.getElementById("confidenceValue").textContent = "-";
+  }
+}
+
+/* -----------------------------
+   USER INPUT
+------------------------------ */
+
+function setResult(val) {
+  history.push(val);
+  const pred = Math.random() < 0.5 ? "PLAYER" : "BANKER";
+  predHistory.push(pred);
+  updateHistory();
+  updatePrediction();
+}
+
+function undo() {
+  if (!history.length) return;
+  history.pop();
+  predHistory.pop();
+  updateHistory();
+  updatePrediction();
+}
+
+function resetAll() {
+  history = [];
+  predHistory = [];
+  updateHistory();
+  updatePrediction();
+}
+
+/* -----------------------------
+   PATTERN GENERATOR
+------------------------------ */
+
+function generatePatterns(pred) {
+  const block = document.getElementById("patternBlock");
+  block.innerHTML = "";
+
+  const center = pred === "PLAYER" ? "P" : "B";
+
+  for (let r = 0; r < 10; r++) {
+    const row = document.createElement("div");
+    row.className = "pattern-row";
+
+    const label = document.createElement("div");
+    label.className = "row-label";
+    label.textContent = "#" + (r + 1);
+    row.appendChild(label);
+
+    const cells = document.createElement("div");
+    cells.className = "row-cells";
+
+    for (let c = 0; c < 10; c++) {
+      const col = document.createElement("div");
+      col.className = "col";
+      let char = c === 4 ? center : (Math.random() < 0.5 ? "P" : "B");
+      col.textContent = char;
+      col.classList.add(char);
+      if (c === 4) col.classList.add("highlight");
+      cells.appendChild(col);
+    }
+
+    row.appendChild(cells);
+    block.appendChild(row);
+  }
+}
+
+/* -----------------------------
+   BUTTON EVENTS
+------------------------------ */
+
+document.getElementById("btnPlayer").addEventListener("click", () => setResult("P"));
+document.getElementById("btnBanker").addEventListener("click", () => setResult("B"));
+document.getElementById("btnUndo").addEventListener("click", undo);
+document.getElementById("btnReset").addEventListener("click", resetAll);
+
+updateHistory();
+updatePrediction();
+
+</script>
+
+</body>
+</html>
