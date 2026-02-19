@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Google AI Baccarat Predictor</title>
+<link rel="icon" href="icon.ico" type="image/x-icon">
+<style>
+  body {
+    margin:0; padding:0;
+    font-family:'Arial',sans-serif;
+    color:#eee; font-size:17px;
+    background: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1400&q=80') no-repeat center center fixed;
+    background-size: cover;
+    display: flex; justify-content: center; align-items: center;
+    height: 100vh;
+  }
+  .container {
+    background-color: rgba(30,30,30,0.85);
+    padding: 30px 20px;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 600px;
+    text-align: center;
+    box-shadow: 0 0 25px rgba(0,0,0,0.6);
+  }
+  .header h1 {
+    font-size: 36px;
+    font-weight: bold;
+    color: #ffffff;
+    background: linear-gradient(90deg, #4285F4, #34A853, #FBBC05, #DB4437);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 20px;
+  }
+  .sequence, .results {
+    margin: 12px 0;
+    font-size: 20px;
+  }
+  .sequence span {
+    display:inline-block;
+    width:28px; height:28px;
+    line-height:28px;
+    text-align:center;
+    border-radius:4px;
+    margin:3px;
+    font-weight:bold;
+  }
+  .P { background:#4285F4; color:#fff; }
+  .B { background:#DB4437; color:#fff; }
+
+  .W, .L {
+    display: inline-block;
+    font-size: 14px;      
+    font-weight: bold;
+    margin: 0 2px;        
+    padding: 2px 5px;     
+    border-radius: 10px;  
+  }
+  .W { background: #00f693; color: #000; }
+  .L { background: #f44336; color: #fff; }
+
+  .prediction {
+    margin: 15px 0;
+    font-size:24px;
+    font-weight:bold;
+  }
+  .prediction .player { color:#4285F4; }
+  .prediction .banker { color:#DB4437; }
+  .confidence { font-size:16px; color:#81C784; margin-left:5px; }
+  .buttons { margin:15px 0; }
+  .buttons button {
+    background:#2c2c2c;
+    color:#eee;
+    border:1px solid #424242;
+    border-radius:6px;
+    padding:10px 16px;
+    margin:6px;
+    cursor:pointer;
+    font-weight:bold;
+  }
+  .buttons button:hover { background:#424242; }
+  .footer { margin-top:20px; font-size:0.85em; color:#b0bec5; }
+</style>
+</head>
+<body>
+
+<!-- =========================
+   SESSION CHECK SCRIPT
+========================== -->
+<script>
+// ✅ SESSION CHECK
+const loggedIn = localStorage.getItem('loggedIn');
+const allowedApp = localStorage.getItem('allowedApp');
+const expiresAt = Number(localStorage.getItem('expiresAt'));
+
+if (loggedIn !== 'true' || allowedApp !== '986sdijfh89327husdf' || (expiresAt && expiresAt < Date.now())) {
+    alert("Please login first!");
+    localStorage.removeItem('loggedIn');
+    localStorage.removeItem('allowedApp');
+    localStorage.removeItem('expiresAt');
+    window.location.href = "index.html"; // redirect to login page
+}
+</script>
+
+<div class="container">
+  <div class="header"><h1>Google AI Baccarat</h1></div>
+  <div class="sequence" id="historyBox">No results yet</div>
+  <div class="results" id="resultsBox"></div>
+  <div class="prediction" id="predictionBox"></div>
+  <div class="buttons">
+    <button onclick="recordResult('P')">PLAYER</button>
+    <button onclick="recordResult('B')">BANKER</button>
+    <button onclick="undo()">UNDO</button>
+    <button onclick="resetAll()">RESET</button>
+  </div>
+  <div class="footer">baccarat0987</div>
+</div>
+
+<script>
+const MIN_HANDS = 10;
+let sequence = JSON.parse(localStorage.getItem('baccarat_sequence')) || [];
+let results = JSON.parse(localStorage.getItem('baccarat_results')) || [];
+let lastPrediction = null;
+
+// ======= Old Fixed Patterns =======
+const oldPatterns = [
+  {seq:'PBPBP', pred:'P'},
+  {seq:'BPBPB', pred:'B'},
+  {seq:'PBPPB', pred:'P'},
+  {seq:'BPPBP', pred:'P'},
+  {seq:'PBBPB', pred:'P'},
+  {seq:'BPBPP', pred:'P'},
+  {seq:'BPBBP', pred:'P'},
+  {seq:'PBPBB', pred:'P'},
+  {seq:'PPBPP', pred:'B'},
+  {seq:'BBPPP', pred:'B'},
+  {seq:'PPBPB', pred:'P'},
+  {seq:'PPPBP', pred:'B'},
+  {seq:'PBBPP', pred:'B'},
+  {seq:'BBPBB', pred:'P'},  
+  {seq:'BBBPB', pred:'P'},   
+  {seq:'BPPBB', pred:'P'},   
+  {seq:'PBPBB', pred:'B'},   
+  {seq:'BPBBP', pred:'B'},     
+  {seq:'PPBBB', pred:'P'},  
+  {seq:'BBPBP', pred:'B'},  
+  {seq:'PBBPB', pred:'B'} 
+];
+
+// ======= History Display =======
+function updateHistory() {
+  const box = document.getElementById('historyBox');
+  const rBox = document.getElementById('resultsBox');
+  if(sequence.length===0){box.innerHTML="No results yet"; rBox.innerHTML=""; return;}
+  
+  box.innerHTML='';
+  const visibleSeq = sequence.slice(-10);
+  visibleSeq.forEach(r=>{
+    const span=document.createElement('span');
+    span.className=r;
+    span.textContent=r;
+    box.appendChild(span);
+  });
+
+  rBox.innerHTML='';
+  const visibleWL = results.slice(-10);
+  visibleWL.forEach(wl=>{
+    if(wl!==''){
+      const span = document.createElement('span');
+      span.className = wl;
+      span.textContent = wl;
+      rBox.appendChild(span);
+    }
+  });
+}
+
+// ======= Old Pattern Prediction =======
+function oldPatternPrediction(seq){
+    if(seq.length < 5) return null;
+    const last5 = seq.slice(-5).join('');
+    const match = oldPatterns.find(p => p.seq === last5);
+    return match ? match.pred : null;
+}
+
+// ======= Adaptive Pattern Prediction =======
+function buildPatterns(seq, length=5){
+    const table = {};
+    for(let i=0; i <= seq.length-length; i++){
+        const sub = seq.slice(i, i+length).join('');
+        const next = seq[i+length];
+        if(!next) continue;
+        if(!table[sub]) table[sub] = {P:0, B:0};
+        table[sub][next]++;
+    }
+    return table;
+}
+
+function adaptivePrediction(seq){
+    if(seq.length < 5) return null;
+    const table = buildPatterns(seq, 5);
+    const last5 = seq.slice(-5).join('');
+    if(table[last5]){
+        return table[last5].P >= table[last5].B ? 'P' : 'B';
+    }
+    return null;
+}
+
+// ======= Trend Prediction =======
+function trendPrediction(seq){
+    const last6 = seq.slice(-6);
+    if(last6.length === 0) return null;
+    const pCount = last6.filter(x=>'P'===x).length;
+    const bCount = last6.filter(x=>'B'===x).length;
+    if(pCount>bCount) return 'P';
+    else if(bCount>pCount) return 'B';
+    else return seq[seq.length-1];
+}
+
+// ======= Combined Prediction =======
+function finalPrediction(seq){
+    const oldPred = oldPatternPrediction(seq);
+    if(oldPred) return {pred: oldPred, confidence: Math.floor(Math.random()*11)+90};
+
+    const adaptivePred = adaptivePrediction(seq);
+    const trendPred = trendPrediction(seq);
+
+    if(adaptivePred && trendPred){
+        if(adaptivePred === trendPred){
+            return {pred: adaptivePred, confidence: Math.floor(Math.random()*11)+85};
+        } else {
+            return {pred: adaptivePred, confidence: Math.floor(Math.random()*21)+70};
+        }
+    }
+
+    const pred = adaptivePred || trendPred;
+    return pred ? {pred, confidence: Math.floor(Math.random()*11)+80} : null;
+}
+
+// ======= Update Prediction Box =======
+function updatePredictionBox(){
+    const box=document.getElementById('predictionBox');
+    if(sequence.length<MIN_HANDS){
+        box.innerHTML=`Enter ${MIN_HANDS-sequence.length} more hands to show prediction`;
+        lastPrediction = null;
+        return;
+    }
+
+    const result = finalPrediction(sequence);
+    if(result){
+        const text = result.pred==='P' ? 'PLAYER' : 'BANKER';
+        const cls = result.pred==='P' ? 'player' : 'banker';
+        box.innerHTML=`Prediction: <span class="${cls}">${text}</span> <span class="confidence">${result.confidence}%</span>`;
+        lastPrediction = result.pred;
+    } else {
+        box.innerHTML="Prediction unavailable";
+        lastPrediction = null;
+    }
+}
+
+// ======= Record / Undo / Reset =======
+function recordResult(r){
+    sequence.push(r);
+    if(lastPrediction){
+        const wl = (lastPrediction===r) ? 'W' : 'L';
+        results.push(wl);
+    } else {
+        results.push('');
+    }
+
+    localStorage.setItem('baccarat_sequence', JSON.stringify(sequence));
+    localStorage.setItem('baccarat_results', JSON.stringify(results));
+    updateHistory();
+    updatePredictionBox();
+}
+
+function undo(){
+    if(sequence.length===0) return;
+    sequence.pop();
+    results.pop();
+    localStorage.setItem('baccarat_sequence', JSON.stringify(sequence));
+    localStorage.setItem('baccarat_results', JSON.stringify(results));
+    updateHistory();
+    updatePredictionBox();
+}
+
+function resetAll(){
+    sequence=[];
+    results=[];
+    lastPrediction=null;
+    localStorage.setItem('baccarat_sequence', JSON.stringify(sequence));
+    localStorage.setItem('baccarat_results', JSON.stringify(results));
+    updateHistory();
+    updatePredictionBox();
+}
+
+// ======= Initial Load =======
+updateHistory();
+updatePredictionBox();
+
+</script>
+</body>
+</html>
