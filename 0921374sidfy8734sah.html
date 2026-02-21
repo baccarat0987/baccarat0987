@@ -1,4 +1,325 @@
-<script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>VisionWave Baccarat</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+<style>
+:root{
+  --bg1:#060709; --bg2:#0b1220;
+  --accent:#00bfff; --accent2:#00ffff;
+  --muted:#9aa0a6; --base-font:16px; --scale:1;
+}
+html{font-size:var(--base-font);}
+body{
+  font-family:'Orbitron',sans-serif;
+  background:radial-gradient(1200px 600px at 10% 10%,rgba(0,43,60,.35) 0%,transparent 10%), 
+             linear-gradient(180deg,var(--bg1) 0%,var(--bg2) 100%);
+  color:#e9f6ff;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  padding:36px;
+  user-select:none;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+.container{
+  width:90%;
+  max-width:450px;
+  min-width:300px;
+  background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,.01));
+  border-radius:16px;
+  padding:calc(22px * var(--scale));
+  box-shadow:0 10px 40px rgba(0,0,0,.6),0 0 40px rgba(0,191,255,.06) inset;
+  border:1px solid rgba(0,191,255,.08);
+  backdrop-filter:blur(6px) saturate(120%);
+  position:relative;
+  overflow:hidden;
+  font-size:1rem;
+}
+.container::before{
+  content:"";
+  position:absolute;
+  inset:-40% -20% auto -20%;
+  height:300px;
+  background:linear-gradient(90deg,transparent,rgba(0,191,255,.06),transparent);
+  transform:rotate(-12deg);
+  animation:slide 8s linear infinite;
+  pointer-events:none;
+}
+@keyframes slide{
+  0%{transform:translateX(-40%) rotate(-12deg)}
+  50%{transform:translateX(40%) rotate(-12deg)}
+  100%{transform:translateX(-40%) rotate(-12deg)}
+}
+.title{
+  font-size:calc(26px * var(--scale)); 
+  text-align:center;
+  color:var(--accent);
+  font-weight:700;
+  text-shadow:0 0 14px rgba(0,191,255,.2),0 0 28px rgba(0,191,255,.08);
+  margin-bottom:14px;
+}
+.progress-wrap{margin-bottom:12px}
+.progress-bar-outer{
+  height:calc(28px * var(--scale));
+  background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(0,0,0,.18));
+  border-radius:calc(14px * var(--scale));
+  overflow:hidden;
+  border:1px solid rgba(0,191,255,.06);
+  box-shadow:inset 0 2px 6px rgba(0,0,0,.6);
+}
+.progress-bar{
+  height:100%;
+  width:0%;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+  transition:width .35s ease-in-out;
+  box-shadow:0 6px 22px rgba(0,191,255,.12) inset;
+}
+.progress-text{
+  margin-top:8px;
+  text-align:center;
+  color:var(--muted);
+  font-size:calc(13px * var(--scale));
+}
+.history{
+  margin-top:14px;
+  background:rgba(10,12,16,.45);
+  border-radius:calc(10px * var(--scale));
+  padding:calc(12px * var(--scale));
+  box-shadow:inset 0 1px 6px rgba(0,0,0,.6);
+  min-height:64px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:calc(8px * var(--scale));
+  font-size:calc(16px * var(--scale));
+  border:1px solid rgba(255,255,255,.02);
+}
+.pill{
+  padding:calc(7px * var(--scale)) calc(12px * var(--scale));
+  border-radius:calc(8px * var(--scale));
+  font-weight:700;
+  color:#fff;
+  box-shadow:0 6px 16px rgba(0,0,0,.45)
+}
+.pill.p{background:linear-gradient(180deg,#1e88e5,#1566b3)}
+.pill.b{background:linear-gradient(180deg,#d32f2f,#9b2121)}
+.prediction{
+  margin-top:calc(18px * var(--scale));
+  padding:calc(18px * var(--scale));
+  border-radius:calc(12px * var(--scale));
+  background:linear-gradient(180deg,rgba(255,255,255,.01),rgba(255,255,255,.02));
+  border:1px solid rgba(0,191,255,.06);
+  box-shadow:0 8px 30px rgba(0,191,255,.03);
+  display:none;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+}
+.prediction h3{margin-bottom:calc(8px * var(--scale));font-size:calc(20px * var(--scale));color:var(--accent);}
+.prediction .pred{
+  font-size:calc(30px * var(--scale));
+  font-weight:700;
+  color:#fff;
+  text-shadow:0 0 8px rgba(0,191,255,.06);
+}
+.suggestion{
+  margin-top:calc(10px * var(--scale));
+  color:var(--accent2);
+  font-weight:700;
+  font-size:calc(16px * var(--scale));
+}
+.message{
+  margin-top:calc(22px * var(--scale));
+  text-align:center;
+  font-size:calc(18px * var(--scale));
+  min-height:40px;
+}
+.message .win{color:#00ffd1;text-shadow:0 0 18px rgba(0,255,209,.12);font-weight:800}
+.message .fail{color:#ff6b6b;text-shadow:0 0 14px rgba(255,107,107,.08);font-weight:800}
+.controls{
+  display:flex;
+  gap:calc(12px * var(--scale));
+  margin-top:calc(18px * var(--scale));
+}
+.controls button{
+  flex:1;
+  padding:calc(12px * var(--scale)) calc(10px * var(--scale));
+  border-radius:calc(10px * var(--scale));
+  border:none;
+  cursor:pointer;
+  font-weight:800;
+  font-size:calc(15px * var(--scale));
+  letter-spacing:.6px;
+  box-shadow:0 6px 18px rgba(0,0,0,.45);
+  transition:transform .16s ease,box-shadow .16s;
+}
+.controls button:hover{transform:translateY(-4px)}
+.btn-p{background:linear-gradient(180deg,#5fb7ff,#1e88e5);color:#001224}
+.btn-b{background:linear-gradient(180deg,#ff9b9b,#d32f2f);color:#210000}
+.btn-undo{background:linear-gradient(180deg,#b98bff,#6a1b9a);color:#fff}
+.btn-reset{background:linear-gradient(180deg,#ffec88,#fbc02d);color:#111}
+.reset-only{display:flex;justify-content:center;margin-top:calc(18px * var(--scale));}
+.reset-only button{padding:calc(12px * var(--scale)) calc(18px * var(--scale));border-radius:calc(10px * var(--scale));border:none;background:linear-gradient(180deg,#ffec88,#fbc02d);font-weight:800;cursor:pointer}
 
-document.write(unescape('%3C%21DOCTYPE%20html%3E%0A%3Chtml%20lang%3D%22en%22%3E%0A%3Chead%3E%0A%3Cmeta%20charset%3D%22utf-8%22%20/%3E%0A%3Ctitle%3EVisionWave%20Baccarat%3C/title%3E%0A%3Cmeta%20name%3D%22viewport%22%20content%3D%22width%3Ddevice-width%2Cinitial-scale%3D1%22%20/%3E%0A%3Clink%20href%3D%22https%3A//fonts.googleapis.com/css2%3Ffamily%3DOrbitron%3Awght@700%26display%3Dswap%22%20rel%3D%22stylesheet%22%20/%3E%0A%3Clink%20rel%3D%22stylesheet%22%20href%3D%22https%3A//cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css%22%20/%3E%0A%3Cstyle%3E%0A%3Aroot%7B--bg1%3A%23060709%3B--bg2%3A%230b1220%3B--accent%3A%2300bfff%3B--accent2%3A%2300ffff%3B--muted%3A%239aa0a6%3B--base-font%3A16px%3B--scale%3A1%3B%7D%0Ahtml%7Bfont-size%3Avar%28--base-font%29%3B%7D%0Abody%7Bfont-family%3A%27Orbitron%27%2Csans-serif%3Bbackground%3Aradial-gradient%281200px%20600px%20at%2010%25%2010%25%2Crgba%280%2C43%2C60%2C.35%29%200%25%2Ctransparent%2010%25%29%2Clinear-gradient%28180deg%2Cvar%28--bg1%29%200%25%2Cvar%28--bg2%29%20100%25%29%3Bcolor%3A%23e9f6ff%3Bdisplay%3Aflex%3Bjustify-content%3Acenter%3Balign-items%3Aflex-start%3Bpadding%3A36px%3Buser-select%3Anone%3B%7D%0A*%7Bbox-sizing%3Aborder-box%3Bmargin%3A0%3Bpadding%3A0%7D%0Ahtml%2Cbody%7Bheight%3A100%25%7D%0A.container%7Bwidth%3A90%25%3Bmax-width%3A450px%3Bmin-width%3A300px%3Bbackground%3Alinear-gradient%28180deg%2Crgba%28255%2C255%2C255%2C.02%29%2Crgba%28255%2C255%2C255%2C.01%29%29%3Bborder-radius%3A16px%3Bpadding%3Acalc%2822px%20*%20var%28--scale%29%29%3Bbox-shadow%3A0%2010px%2040px%20rgba%280%2C0%2C0%2C.6%29%2C0%200%2040px%20rgba%280%2C191%2C255%2C.06%29%20inset%3Bborder%3A1px%20solid%20rgba%280%2C191%2C255%2C.08%29%3Bbackdrop-filter%3Ablur%286px%29%20saturate%28120%25%29%3Bposition%3Arelative%3Boverflow%3Ahidden%3Bfont-size%3A1rem%3B%7D%0A.container%3A%3Abefore%7Bcontent%3A%22%22%3Bposition%3Aabsolute%3Binset%3A-40%25%20-20%25%20auto%20-20%25%3Bheight%3A300px%3Bbackground%3Alinear-gradient%2890deg%2Ctransparent%2Crgba%280%2C191%2C255%2C.06%29%2Ctransparent%29%3Btransform%3Arotate%28-12deg%29%3Banimation%3Aslide%208s%20linear%20infinite%3Bpointer-events%3Anone%3B%7D%0A@keyframes%20slide%7B0%25%7Btransform%3AtranslateX%28-40%25%29%20rotate%28-12deg%29%7D50%25%7Btransform%3AtranslateX%2840%25%29%20rotate%28-12deg%29%7D100%25%7Btransform%3AtranslateX%28-40%25%29%20rotate%28-12deg%29%7D%7D%0A.title%7Bfont-size%3Acalc%2826px%20*%20var%28--scale%29%29%3B%20text-align%3Acenter%3Bcolor%3Avar%28--accent%29%3Bfont-weight%3A700%3Btext-shadow%3A0%200%2014px%20rgba%280%2C191%2C255%2C.2%29%2C0%200%2028px%20rgba%280%2C191%2C255%2C.08%29%3Bmargin-bottom%3A14px%3B%7D%0A.progress-wrap%7Bmargin-bottom%3A12px%7D%0A.progress-bar-outer%7Bheight%3Acalc%2828px%20*%20var%28--scale%29%29%3Bbackground%3Alinear-gradient%28180deg%2Crgba%28255%2C255%2C255%2C.02%29%2Crgba%280%2C0%2C0%2C.18%29%29%3Bborder-radius%3Acalc%2814px%20*%20var%28--scale%29%29%3Boverflow%3Ahidden%3Bborder%3A1px%20solid%20rgba%280%2C191%2C255%2C.06%29%3Bbox-shadow%3Ainset%200%202px%206px%20rgba%280%2C0%2C0%2C.6%29%3B%7D%0A.progress-bar%7Bheight%3A100%25%3Bwidth%3A0%25%3Bbackground%3Alinear-gradient%2890deg%2Cvar%28--accent%29%2Cvar%28--accent2%29%29%3Btransition%3Awidth%20.35s%20ease-in-out%3Bbox-shadow%3A0%206px%2022px%20rgba%280%2C191%2C255%2C.12%29%20inset%3B%7D%0A.progress-text%7Bmargin-top%3A8px%3Btext-align%3Acenter%3Bcolor%3Avar%28--muted%29%3Bfont-size%3Acalc%2813px%20*%20var%28--scale%29%29%3B%7D%0A.history%7Bmargin-top%3A14px%3Bbackground%3Argba%2810%2C12%2C16%2C.45%29%3Bborder-radius%3Acalc%2810px%20*%20var%28--scale%29%29%3Bpadding%3Acalc%2812px%20*%20var%28--scale%29%29%3Bbox-shadow%3Ainset%200%201px%206px%20rgba%280%2C0%2C0%2C.6%29%3Bmin-height%3A64px%3Bdisplay%3Aflex%3Balign-items%3Acenter%3Bjustify-content%3Acenter%3Bflex-wrap%3Awrap%3Bgap%3Acalc%288px%20*%20var%28--scale%29%29%3Bfont-size%3Acalc%2816px%20*%20var%28--scale%29%29%3Bborder%3A1px%20solid%20rgba%28255%2C255%2C255%2C.02%29%3B%7D%0A.pill%7Bpadding%3Acalc%287px%20*%20var%28--scale%29%29%20calc%2812px%20*%20var%28--scale%29%29%3Bborder-radius%3Acalc%288px%20*%20var%28--scale%29%29%3Bfont-weight%3A700%3Bcolor%3A%23fff%3Bbox-shadow%3A0%206px%2016px%20rgba%280%2C0%2C0%2C.45%29%7D%0A.pill.p%7Bbackground%3Alinear-gradient%28180deg%2C%231e88e5%2C%231566b3%29%7D%0A.pill.b%7Bbackground%3Alinear-gradient%28180deg%2C%23d32f2f%2C%239b2121%29%7D%0A.prediction%7Bmargin-top%3Acalc%2818px%20*%20var%28--scale%29%29%3Bpadding%3Acalc%2818px%20*%20var%28--scale%29%29%3Bborder-radius%3Acalc%2812px%20*%20var%28--scale%29%29%3Bbackground%3Alinear-gradient%28180deg%2Crgba%28255%2C255%2C255%2C.01%29%2Crgba%28255%2C255%2C255%2C.02%29%29%3Bborder%3A1px%20solid%20rgba%280%2C191%2C255%2C.06%29%3Bbox-shadow%3A0%208px%2030px%20rgba%280%2C191%2C255%2C.03%29%3Bdisplay%3Anone%3Bflex-direction%3Acolumn%3Balign-items%3Acenter%3Bjustify-content%3Acenter%3B%7D%0A.prediction%20.pred%7Bfont-size%3Acalc%2830px%20*%20var%28--scale%29%29%3Bfont-weight%3A700%3Bcolor%3A%23fff%3Btext-shadow%3A0%200%208px%20rgba%280%2C191%2C255%2C.06%29%3B%7D%0A.suggestion%7Bmargin-top%3Acalc%2810px%20*%20var%28--scale%29%29%3Bcolor%3Avar%28--accent2%29%3Bfont-weight%3A700%3Bfont-size%3Acalc%2816px%20*%20var%28--scale%29%29%3B%7D%0A.message%7Bmargin-top%3Acalc%2822px%20*%20var%28--scale%29%29%3Btext-align%3Acenter%3Bfont-size%3Acalc%2818px%20*%20var%28--scale%29%29%3Bmin-height%3A40px%3B%7D%0A.message%20.win%7Bcolor%3A%2300ffd1%3Btext-shadow%3A0%200%2018px%20rgba%280%2C255%2C209%2C.12%29%3Bfont-weight%3A800%7D%0A.message%20.fail%7Bcolor%3A%23ff6b6b%3Btext-shadow%3A0%200%2014px%20rgba%28255%2C107%2C107%2C.08%29%3Bfont-weight%3A800%7D%0A.controls%7Bdisplay%3Aflex%3Bgap%3Acalc%2812px%20*%20var%28--scale%29%29%3Bmargin-top%3Acalc%2818px%20*%20var%28--scale%29%29%3B%7D%0A.controls%20button%7Bflex%3A1%3Bpadding%3Acalc%2812px%20*%20var%28--scale%29%29%20calc%2810px%20*%20var%28--scale%29%29%3Bborder-radius%3Acalc%2810px%20*%20var%28--scale%29%29%3Bborder%3Anone%3Bcursor%3Apointer%3Bfont-weight%3A800%3Bfont-size%3Acalc%2815px%20*%20var%28--scale%29%29%3Bletter-spacing%3A.6px%3Bbox-shadow%3A0%206px%2018px%20rgba%280%2C0%2C0%2C.45%29%3Btransition%3Atransform%20.16s%20ease%2Cbox-shadow%20.16s%3B%7D%0A.controls%20button%3Ahover%7Btransform%3AtranslateY%28-4px%29%7D%0A.btn-p%7Bbackground%3Alinear-gradient%28180deg%2C%235fb7ff%2C%231e88e5%29%3Bcolor%3A%23001224%7D%0A.btn-b%7Bbackground%3Alinear-gradient%28180deg%2C%23ff9b9b%2C%23d32f2f%29%3Bcolor%3A%23210000%7D%0A.btn-undo%7Bbackground%3Alinear-gradient%28180deg%2C%23b98bff%2C%236a1b9a%29%3Bcolor%3A%23fff%7D%0A.btn-reset%7Bbackground%3Alinear-gradient%28180deg%2C%23ffec88%2C%23fbc02d%29%3Bcolor%3A%23111%7D%0A.reset-only%7Bdisplay%3Aflex%3Bjustify-content%3Acenter%3Bmargin-top%3Acalc%2818px%20*%20var%28--scale%29%29%3B%7D%0A.reset-only%20button%7Bpadding%3Acalc%2812px%20*%20var%28--scale%29%29%20calc%2818px%20*%20var%28--scale%29%29%3Bborder-radius%3Acalc%2810px%20*%20var%28--scale%29%29%3Bborder%3Anone%3Bbackground%3Alinear-gradient%28180deg%2C%23ffec88%2C%23fbc02d%29%3Bfont-weight%3A800%3Bcursor%3Apointer%7D%0A%0A@media%20%28max-width%3A450px%29%7Bhtml%7B--scale%3A0.85%3B%7D%7D%0A@media%20%28max-width%3A350px%29%7Bhtml%7B--scale%3A0.7%3B%7D%7D%0A@media%20%28max-width%3A300px%29%7Bhtml%7B--scale%3A0.6%3B%7D%7D%0A%3C/style%3E%0A%3C/head%3E%0A%3Cbody%3E%0A%0A%3Cscript%3E%0A%28function%28%29%7B%0A%20%20//%20%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%20SESSION%20CHECK%20%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%0A%20%20const%20l%20%3D%20localStorage.getItem%28%27loggedIn%27%29%2C%0A%20%20%20%20%20%20%20%20a%20%3D%20localStorage.getItem%28%27allowedApp%27%29%2C%0A%20%20%20%20%20%20%20%20e%20%3D%20Number%28localStorage.getItem%28%27expiresAt%27%29%29%3B%0A%20%20if%28l%21%3D%3D%27true%27%20%7C%7C%20a%21%3D%3D%270921374sidfy8734sah%27%20%7C%7C%20%28e%20%26%26%20e%20%3C%20Date.now%28%29%29%29%7B%0A%20%20%20%20alert%28%22Please%20login%20first%21%22%29%3B%0A%20%20%20%20localStorage.removeItem%28%27loggedIn%27%29%3B%20%0A%20%20%20%20localStorage.removeItem%28%27allowedApp%27%29%3B%20%0A%20%20%20%20localStorage.removeItem%28%27expiresAt%27%29%3B%0A%20%20%20%20window.location.href%3D%22index.html%22%3B%0A%20%20%7D%0A%7D%29%28%29%3B%0A%3C/script%3E%0A%0A%3Cdiv%20class%3D%22container%22%20id%3D%22app%22%3E%0A%20%20%3Cdiv%20class%3D%22title%22%3EVisionWave%20Baccarat%20PRO%3C/div%3E%0A%20%20%3Cdiv%20class%3D%22progress-wrap%22%20id%3D%22progressContainer%22%3E%0A%20%20%20%20%3Cdiv%20class%3D%22progress-bar-outer%22%3E%3Cdiv%20class%3D%22progress-bar%22%20id%3D%22progressBar%22%3E%3C/div%3E%3C/div%3E%0A%20%20%20%20%3Cdiv%20class%3D%22progress-text%22%20id%3D%22progressText%22%3E0%25%20-%20Record%2025%20entries%20to%20calculate%20prediction%3C/div%3E%0A%20%20%3C/div%3E%0A%20%20%3Cdiv%20class%3D%22history%22%20id%3D%22historyArea%22%3E%0A%20%20%20%20%3Cdiv%20id%3D%22historyDisplay%22%3E%3C/div%3E%0A%20%20%3C/div%3E%0A%20%20%3Cdiv%20class%3D%22prediction%22%20id%3D%22predictionCard%22%3E%0A%20%20%20%20%3Cdiv%20class%3D%22pred%22%20id%3D%22predictionText%22%3E%3C/div%3E%0A%20%20%20%20%3Cdiv%20class%3D%22suggestion%22%20id%3D%22suggestionText%22%3E%3C/div%3E%0A%20%20%3C/div%3E%0A%20%20%3Cdiv%20class%3D%22message%22%20id%3D%22messageArea%22%3E%3C/div%3E%0A%20%20%3Cdiv%20class%3D%22controls%22%20id%3D%22controlsRow%22%3E%0A%20%20%20%20%3Cbutton%20class%3D%22btn-p%22%20id%3D%22btnP%22%3E%3Ci%20class%3D%22fas%20fa-user%22%3E%3C/i%3E%20Player%3C/button%3E%0A%20%20%20%20%3Cbutton%20class%3D%22btn-b%22%20id%3D%22btnB%22%3E%3Ci%20class%3D%22fas%20fa-landmark%22%3E%3C/i%3E%20Banker%3C/button%3E%0A%20%20%20%20%3Cbutton%20class%3D%22btn-undo%22%20id%3D%22btnUndo%22%3E%3Ci%20class%3D%22fas%20fa-undo%22%3E%3C/i%3E%20Undo%3C/button%3E%0A%20%20%20%20%3Cbutton%20class%3D%22btn-reset%22%20id%3D%22btnReset%22%3E%3Ci%20class%3D%22fas%20fa-redo%22%3E%3C/i%3E%20Reset%3C/button%3E%0A%20%20%3C/div%3E%0A%3C/div%3E%0A%0A%3Cscript%3E%0A%28function%28%29%7B%0A%20%20//%20%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%20Baccarat%20Logic%20%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%0A%20%20const%20MAX%20%3D%2025%2C%20STEPS%20%3D%20%5B100%2C200%2C600%2C1400%2C3000%2C6200%5D%3B%0A%20%20let%20hist%3D%5B%5D%2C%20step%3D0%2C%20pred%3D%22%22%2C%20done%3Dfalse%2C%20undoStack%3D%5B%5D%3B%0A%20%20const%20bar%3Ddocument.getElementById%28%22progressBar%22%29%2C%0A%20%20%20%20%20%20%20%20barTxt%3Ddocument.getElementById%28%22progressText%22%29%2C%0A%20%20%20%20%20%20%20%20histDisp%3Ddocument.getElementById%28%22historyDisplay%22%29%2C%0A%20%20%20%20%20%20%20%20predCard%3Ddocument.getElementById%28%22predictionCard%22%29%2C%0A%20%20%20%20%20%20%20%20predTxt%3Ddocument.getElementById%28%22predictionText%22%29%2C%0A%20%20%20%20%20%20%20%20suggTxt%3Ddocument.getElementById%28%22suggestionText%22%29%2C%0A%20%20%20%20%20%20%20%20msg%3Ddocument.getElementById%28%22messageArea%22%29%2C%0A%20%20%20%20%20%20%20%20ctr%3Ddocument.getElementById%28%22controlsRow%22%29%2C%0A%20%20%20%20%20%20%20%20prog%3Ddocument.getElementById%28%22progressContainer%22%29%2C%0A%20%20%20%20%20%20%20%20histBox%3Ddocument.getElementById%28%22historyArea%22%29%3B%0A%0A%20%20function%20snap%28%29%7Breturn%20%7Bh%3A%5B...hist%5D%2Cstep%2Cpred%2Cdone%2Cui%3A%7Bw%3Abar.style.width%2Ct%3AbarTxt.textContent%2Ch%3AhistDisp.innerHTML%2Cshow%3ApredCard.style.display%2Ctext%3ApredTxt.textContent%2Csug%3AsuggTxt.textContent%2Cmsg%3Amsg.innerHTML%2Cctrl%3Actr.innerHTML%2Cprog%3Aprog.style.display%2Chis%3AhistBox.style.display%7D%7D%3B%7D%0A%20%20function%20restore%28s%29%7Bhist%3D%5B...s.h%5D%3Bstep%3Ds.step%3Bpred%3Ds.pred%3Bdone%3Ds.done%3Bbar.style.width%3Ds.ui.w%3BbarTxt.textContent%3Ds.ui.t%3BhistDisp.innerHTML%3Ds.ui.h%3BpredCard.style.display%3Ds.ui.show%3BpredTxt.textContent%3Ds.ui.text%3BsuggTxt.textContent%3Ds.ui.sug%3Bmsg.innerHTML%3Ds.ui.msg%3Bctr.innerHTML%3Ds.ui.ctrl%3Bprog.style.display%3Ds.ui.prog%3BhistBox.style.display%3Ds.ui.his%3Bbind%28%29%3B%7D%0A%0A%20%20function%20ui%28%29%7B%0A%20%20%20%20histDisp.innerHTML%20%3D%20hist.slice%28-8%29.map%28v%3D%3E%60%3Cdiv%20class%3D%22pill%20%24%7Bv%3D%3D%3D%27P%27%3F%27p%27%3A%27b%27%7D%22%3E%24%7Bv%7D%3C/div%3E%60%29.join%28%22%22%29%3B%0A%20%20%20%20const%20pct%3DMath.min%28Math.round%28hist.length/MAX*100%29%2C100%29%3B%0A%20%20%20%20bar.style.width%3Dpct+%22%25%22%3B%0A%20%20%20%20barTxt.textContent%20%3D%20hist.length%3CMAX%3F%60%24%7Bpct%7D%25%20-%20Record%2025%20entries%20to%20calculate%20prediction%60%3A%22%u2705%20Prediction%20ready%21%22%3B%0A%20%20%20%20if%28pred%29%7BpredTxt.textContent%3Dpred%3BsuggTxt.textContent%3D%60%uD83D%uDCA1%20Suggested%20Bet%3A%20%24%7BSTEPS%5Bstep%5D%7D%60%3BpredCard.style.display%3D%22flex%22%3B%7D%0A%20%20%20%20else%20%7BpredCard.style.display%3D%22none%22%3BpredTxt.textContent%3D%22%22%3BsuggTxt.textContent%3D%22%22%3B%7D%0A%20%20%20%20if%28%21done%29%20msg.innerHTML%3D%22%22%3B%0A%20%20%7D%0A%0A%20%20function%20makePred%28%29%7B%0A%20%20%20%20if%28hist.length%3CMAX%29%20return%3B%0A%20%20%20%20let%20momentum%3Dhist.reduce%28%28a%2Cv%2Ci%29%3D%3Ea+%28v%3D%3D%3D%27P%27%3F1%3A-1%29*%28i+1%29%2C0%29%3B%0A%20%20%20%20let%20last%3Dhist%5Bhist.length-1%5D%2Cstreak%3D1%3B%0A%20%20%20%20for%28let%20i%3Dhist.length-2%3Bi%3E%3D0%3Bi--%29%7Bif%28hist%5Bi%5D%3D%3D%3Dlast%29%20streak++%3B%20else%20break%3B%7D%0A%20%20%20%20let%20reversal%3Dstreak%3E%3D3%3F-1%3A1%3B%0A%20%20%20%20let%20lead%3Dhist.filter%28x%3D%3E%27P%27%3D%3D%3Dx%29.length-hist.filter%28x%3D%3E%27B%27%3D%3D%3Dx%29.length%3B%0A%20%20%20%20let%20seqCounts%3D%7B%7D%3Bfor%28let%20i%3D0%3Bi%3C%3Dhist.length-3%3Bi++%29%7Blet%20seq%3Dhist.slice%28i%2Ci+3%29.join%28%27%27%29%3BseqCounts%5Bseq%5D%3D%28seqCounts%5Bseq%5D%7C%7C0%29+1%3B%7D%0A%20%20%20%20let%20lastSeq%3Dhist.slice%28-3%29.join%28%27%27%29%3Blet%20seqBoost%3DseqCounts%5BlastSeq%5D%3E1%3F1%3A0%3B%0A%20%20%20%20let%20score%3Dmomentum*0.4+reversal*1+lead*0.2+seqBoost*0.5%3B%0A%20%20%20%20pred%3Dscore%3E%3D0%3F%22Player%22%3A%22Banker%22%3BpredCard.style.display%3D%22flex%22%3BpredTxt.textContent%3Dpred%3Bif%28step%3E%3DSTEPS.length%29%20step%3D0%3BsuggTxt.textContent%3D%60%uD83D%uDCA1%20Suggested%20Bet%3A%20%24%7BSTEPS%5Bstep%5D%7D%60%3B%0A%20%20%7D%0A%0A%20%20function%20end%28text%2Ctype%29%7B%0A%20%20%20%20msg.innerHTML%3D%60%3Cdiv%20class%3D%22%24%7Btype%7D%22%3E%24%7Btext%7D%3C/div%3E%60%3Bprog.style.display%3D%22none%22%3BhistBox.style.display%3D%22none%22%3BpredCard.style.display%3D%22none%22%3B%0A%20%20%20%20ctr.innerHTML%3D%60%3Cdiv%20class%3D%22reset-only%22%3E%3Cbutton%20class%3D%22btn-reset%22%20id%3D%22endReset%22%3E%3Ci%20class%3D%22fas%20fa-redo%22%3E%3C/i%3E%20Reset%3C/button%3E%3C/div%3E%60%3B%0A%20%20%20%20document.getElementById%28%22endReset%22%29.onclick%3Dreset%3Bdone%3Dtrue%3B%0A%20%20%7D%0A%0A%20%20function%20record%28r%29%7B%0A%20%20%20%20if%28done%29%20return%3B%20undoStack.push%28snap%28%29%29%3B%20hist.push%28r%29%3B%20ui%28%29%3B%0A%20%20%20%20if%28hist.length%3E%3DMAX%26%26%21pred%29%7BmakePred%28%29%3Breturn%3B%7D%0A%20%20%20%20if%28pred%29%7B%0A%20%20%20%20%20%20const%20win%3D%28pred%3D%3D%3D%22Player%22%26%26r%3D%3D%3D%22P%22%29%7C%7C%28pred%3D%3D%3D%22Banker%22%26%26r%3D%3D%3D%22B%22%29%3B%0A%20%20%20%20%20%20if%28win%29%7Bend%28%22%uD83C%uDF89%20Congrats%21%20You%20won%21%20Click%20Reset%20to%20play%20again.%22%2C%22win%22%29%3Breturn%3B%7D%0A%20%20%20%20%20%20step++%3Bif%28step%3CSTEPS.length%29suggTxt.textContent%3D%60%uD83D%uDCA1%20Suggested%20Bet%3A%20%24%7BSTEPS%5Bstep%5D%7D%60%3Belse%7Bend%28%22%u274C%20FAIL%21%20Please%20click%20Reset%20to%20try%20again.%22%2C%22fail%22%29%3Breturn%3B%7D%0A%20%20%20%20%20%20makePred%28%29%3B%0A%20%20%20%20%7D%0A%20%20%7D%0A%0A%20%20function%20undo%28%29%7Bif%28%21undoStack.length%29%20return%3B%20restore%28undoStack.pop%28%29%29%3B%7D%0A%20%20function%20reset%28%29%7Bhist%3D%5B%5D%3Bstep%3D0%3Bpred%3D%22%22%3Bdone%3Dfalse%3BundoStack%3D%5B%5D%3Bbar.style.width%3D%220%25%22%3BbarTxt.textContent%3D%220%25%20-%20Record%2025%20entries%20to%20calculate%20prediction%22%3BhistDisp.innerHTML%3D%22%22%3BpredTxt.textContent%3D%22%22%3BsuggTxt.textContent%3D%22%22%3BpredCard.style.display%3D%22none%22%3Bmsg.innerHTML%3D%22%22%3Bprog.style.display%3D%22%22%3BhistBox.style.display%3D%22%22%3Bctr.innerHTML%3D%60%3Cbutton%20class%3D%22btn-p%22%20id%3D%22btnP%22%3E%3Ci%20class%3D%22fas%20fa-user%22%3E%3C/i%3E%20Player%3C/button%3E%3Cbutton%20class%3D%22btn-b%22%20id%3D%22btnB%22%3E%3Ci%20class%3D%22fas%20fa-landmark%22%3E%3C/i%3E%20Banker%3C/button%3E%3Cbutton%20class%3D%22btn-undo%22%20id%3D%22btnUndo%22%3E%3Ci%20class%3D%22fas%20fa-undo%22%3E%3C/i%3E%20Undo%3C/button%3E%3Cbutton%20class%3D%22btn-reset%22%20id%3D%22btnReset%22%3E%3Ci%20class%3D%22fas%20fa-redo%22%3E%3C/i%3E%20Reset%3C/button%3E%60%3Bbind%28%29%3B%7D%0A%20%20function%20bind%28%29%7Bconst%20p%3Ddocument.getElementById%28%22btnP%22%29%2Cb%3Ddocument.getElementById%28%22btnB%22%29%2Cu%3Ddocument.getElementById%28%22btnUndo%22%29%2Cr%3Ddocument.getElementById%28%22btnReset%22%29%3Bif%28p%29p.onclick%3D%28%29%3D%3Erecord%28%22P%22%29%3Bif%28b%29b.onclick%3D%28%29%3D%3Erecord%28%22B%22%29%3Bif%28u%29u.onclick%3Dundo%3Bif%28r%29r.onclick%3Dreset%3B%7D%0A%20%20document.addEventListener%28%22keydown%22%2Ce%3D%3E%7Bif%28e.key.toUpperCase%28%29%3D%3D%3D%22P%22%29record%28%22P%22%29%3Bif%28e.key.toUpperCase%28%29%3D%3D%3D%22B%22%29record%28%22B%22%29%3Bif%28e.key%3D%3D%3D%22z%22%26%26%28e.ctrlKey%7C%7Ce.metaKey%29%29undo%28%29%3B%7D%29%3B%0A%20%20bind%28%29%3Bui%28%29%3B%0A%0A%20%20//%20%3D%3D%3D%3D%3D%3D%3D%20BLOCK%20RIGHT-CLICK%20%26%20DEVTOOLS%20%3D%3D%3D%3D%3D%3D%3D%0A%20%20document.addEventListener%28%27contextmenu%27%2Ce%3D%3Ee.preventDefault%28%29%29%3B%0A%20%20document.addEventListener%28%27keydown%27%2Ce%3D%3E%7Bif%28e.key%3D%3D%3D%22F12%22%7C%7C%28e.ctrlKey%26%26%5B%22U%22%2C%22Shift%22%2C%22I%22%2C%22J%22%2C%22C%22%5D.includes%28e.key.toUpperCase%28%29%29%29%29%7Be.preventDefault%28%29%3Balert%28%22DevTools%20disabled%21%22%29%3B%7D%7D%29%3B%0A%7D%29%28%29%3B%0A%3C/script%3E%0A%0A%3C/body%3E%0A%3C/html%3E'));
+@media (max-width:450px){html{--scale:0.85;}}
+@media (max-width:350px){html{--scale:0.7;}}
+@media (max-width:300px){html{--scale:0.6;}}
+</style>
+</head>
+<body>
+
+<script>
+  // ================= APP KEY SESSION CHECK =================
+  const loggedIn = localStorage.getItem('loggedIn');
+  const allowedApp = localStorage.getItem('allowedApp');
+  const expiresAt = Number(localStorage.getItem('expiresAt'));
+
+  if(loggedIn !== 'true' || allowedApp !== '0921374sidfy8734sah' || (expiresAt && expiresAt < Date.now())) {
+      alert("Please login first!");
+      localStorage.removeItem('loggedIn');
+      localStorage.removeItem('allowedApp');
+      localStorage.removeItem('expiresAt');
+      window.location.href = "index.html";
+  }
 </script>
+
+<div class="container" id="app">
+  <div class="title">VisionWave Baccarat PRO</div>
+  <div class="progress-wrap" id="progressContainer">
+    <div class="progress-bar-outer"><div class="progress-bar" id="progressBar"></div></div>
+    <div class="progress-text" id="progressText">0% - Record 25 entries to calculate prediction</div>
+  </div>
+  <div class="history" id="historyArea">
+    <div id="historyDisplay" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:center"></div>
+  </div>
+  <div class="prediction" id="predictionCard">
+    <div class="pred" id="predictionText"></div>
+    <div class="suggestion" id="suggestionText"></div>
+  </div>
+  <div class="message" id="messageArea"></div>
+  <div class="controls" id="controlsRow">
+    <button class="btn-p" id="btnP"><i class="fas fa-user"></i> Player</button>
+    <button class="btn-b" id="btnB"><i class="fas fa-landmark"></i> Banker</button>
+    <button class="btn-undo" id="btnUndo"><i class="fas fa-undo"></i> Undo</button>
+    <button class="btn-reset" id="btnReset"><i class="fas fa-redo"></i> Reset</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  const MAX_ENTRIES = 25, steps = [100,200,600,1400,3000,6200];
+  let hist = [], step = 0, pred = "", done = false, undoStack = [];
+  const bar = document.getElementById("progressBar"),
+        barTxt = document.getElementById("progressText"),
+        histDisp = document.getElementById("historyDisplay"),
+        predCard = document.getElementById("predictionCard"),
+        predTxt = document.getElementById("predictionText"),
+        suggTxt = document.getElementById("suggestionText"),
+        msg = document.getElementById("messageArea"),
+        ctr = document.getElementById("controlsRow"),
+        prog = document.getElementById("progressContainer"),
+        histBox = document.getElementById("historyArea");
+
+  function snap(){ return { h:[...hist], step, pred, done, ui:{ w:bar.style.width,t:barTxt.textContent,h:histDisp.innerHTML, show:predCard.style.display,text:predTxt.textContent,sug:suggTxt.textContent,msg:msg.innerHTML,ctrl:ctr.innerHTML,prog:prog.style.display,his:histBox.style.display } }; }
+  function restore(s){ hist=[...s.h]; step=s.step; pred=s.pred; done=s.done; bar.style.width=s.ui.w; barTxt.textContent=s.ui.t; histDisp.innerHTML=s.ui.h; predCard.style.display=s.ui.show; predTxt.textContent=s.ui.text; suggTxt.textContent=s.ui.sug; msg.innerHTML=s.ui.msg; ctr.innerHTML=s.ui.ctrl; prog.style.display=s.ui.prog; histBox.style.display=s.ui.his; bind(); }
+
+  function ui(){
+    const last8=hist.slice(-8);
+    histDisp.innerHTML=last8.map(v=>`<div class="pill ${v==='P'?'p':'b'}">${v}</div>`).join("");
+    const pct = Math.min(Math.round(hist.length/MAX_ENTRIES*100),100);
+    bar.style.width = pct+"%";
+    barTxt.textContent = hist.length<MAX_ENTRIES ? `${pct}% - Record 25 entries to calculate prediction` : "✅ Prediction ready!";
+    if(pred){ predTxt.textContent=pred; suggTxt.textContent=`💡 Suggested Bet: ${steps[step]}`; predCard.style.display="flex"; } 
+    else { predCard.style.display="none"; predTxt.textContent=""; suggTxt.textContent=""; }
+    if(!done) msg.innerHTML="";
+  }
+
+  function makePred(){
+    const trend = hist.slice(-25);
+    if(trend.length < MAX_ENTRIES) return;
+    let momentum = trend.reduce((acc,val,i)=> acc + (val==='P'?1:-1)*(i+1),0);
+    let last = trend[trend.length-1], streak=1;
+    for(let i=trend.length-2;i>=0;i--){ if(trend[i]===last) streak++; else break; }
+    let reversal = streak >= 3 ? -1 : 1;
+    let lead = trend.filter(x=>'P'===x).length - trend.filter(x=>'B'===x).length;
+    let seqCounts={};
+    for(let i=0;i<=trend.length-3;i++){ let seq = trend.slice(i,i+3).join(''); seqCounts[seq] = (seqCounts[seq]||0)+1; }
+    let lastSeq = trend.slice(-3).join(''); let seqBoost = seqCounts[lastSeq]>1 ? 1 : 0;
+    let score = momentum*0.4 + reversal*1 + lead*0.2 + seqBoost*0.5;
+    pred = score >= 0 ? "Player" : "Banker";
+    predCard.style.display="flex";
+    predTxt.textContent = pred;
+    if(step>=steps.length) step=0;
+    suggTxt.textContent = `💡 Suggested Bet: ${steps[step]}`;
+  }
+
+  function end(text,type){
+    msg.innerHTML=`<div class="${type}">${text}</div>`;
+    prog.style.display="none"; histBox.style.display="none"; predCard.style.display="none";
+    ctr.innerHTML=`<div class="reset-only"><button class="btn-reset" id="endReset"><i class="fas fa-redo"></i> Reset</button></div>`;
+    document.getElementById("endReset").onclick=reset;
+    done=true;
+  }
+
+  function record(r){
+    if(done) return;
+    undoStack.push(snap());
+    hist.push(r); ui();
+    if(hist.length >= MAX_ENTRIES && !pred){ makePred(); return; }
+    if(pred){
+      const win = (pred==="Player" && r==="P") || (pred==="Banker" && r==="B");
+      if(win){ end("🎉 Congrats! You won! Click Reset to play again.","win"); return; }
+      step++;
+      if(step < steps.length){ suggTxt.textContent = `💡 Suggested Bet: ${steps[step]}`; }
+      else { end("❌ FAIL! Please click Reset to try again.","fail"); return; }
+      makePred();
+    }
+  }
+
+  function undo(){ if(!undoStack.length) return; restore(undoStack.pop()); }
+
+  function reset(){
+    hist=[]; step=0; pred=""; done=false; undoStack=[];
+    bar.style.width="0%"; barTxt.textContent="0% - Record 25 entries to calculate prediction";
+    histDisp.innerHTML=""; predTxt.textContent=""; suggTxt.textContent=""; predCard.style.display="none"; msg.innerHTML="";
+    prog.style.display=""; histBox.style.display="";
+    ctr.innerHTML=`<button class="btn-p" id="btnP"><i class="fas fa-user"></i> Player</button>
+                   <button class="btn-b" id="btnB"><i class="fas fa-landmark"></i> Banker</button>
+                   <button class="btn-undo" id="btnUndo"><i class="fas fa-undo"></i> Undo</button>
+                   <button class="btn-reset" id="btnReset"><i class="fas fa-redo"></i> Reset</button>`;
+    bind();
+  }
+
+  function bind(){
+    const p=document.getElementById("btnP"),b=document.getElementById("btnB"), u=document.getElementById("btnUndo"),r=document.getElementById("btnReset");
+    if(p)p.onclick=()=>record("P");
+    if(b)b.onclick=()=>record("B");
+    if(u)u.onclick=undo;
+    if(r)r.onclick=reset;
+  }
+
+  document.addEventListener("keydown",e=>{
+    if(e.key.toUpperCase()==="P") record("P");
+    if(e.key.toUpperCase()==="B") record("B");
+    if(e.key==="z"&&(e.ctrlKey||e.metaKey)) undo();
+  });
+
+  bind(); ui();
+
+  // Disable right-click and devtools
+  document.addEventListener('contextmenu',e=>e.preventDefault());
+  document.addEventListener('keydown',e=>{
+    if(e.key==="F12"||(e.ctrlKey&&["U","Shift","I","J","C"].includes(e.key.toUpperCase()))){e.preventDefault();}
+  });
+
+})();
+</script>
+
+</body>
+</html>
